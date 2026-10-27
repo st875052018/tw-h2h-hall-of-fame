@@ -117,6 +117,8 @@ th[aria-sort] button { color: var(--ink); font-weight: 700; }
 .chart .grid { stroke: var(--line); stroke-width: 0.5; }
 .chart .zero { stroke: var(--line2); stroke-width: 0.5; }
 .chart .cut { stroke: var(--line2); stroke-width: 0.5; stroke-dasharray: 3 3; }
+.chart .band { fill: var(--step); }
+.chart .med { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
 .chart .xh { stroke: var(--muted); stroke-width: 0.5; }
 .chart .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
 .chart .lab { cursor: pointer; }
@@ -144,6 +146,8 @@ section { scroll-margin-top: 64px; }
 .key { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--muted); }
 .key i { display: inline-block; width: 16px; height: 2.5px; background: var(--accent); }
 .key i.g { height: 1.25px; background: var(--line2); }
+.key i.band { height: 10px; background: var(--step); }
+.key i.med { height: 0; background: none; border-top: 1px dashed var(--muted); }
 .key b { color: var(--ink); }
 /* games as squares */
 .games { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -271,14 +275,14 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
     <div class="sec-head"><h2>三季總表</h2></div>
     <div class="ch"><h3>歷年最終名次</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
     <div class="chart" id="finals"></div>
+    <div class="ch"><h3>生涯對戰淨勝場</h3><span class="key"><i></i><b class="key-name"></b><i class="band"></i>全聯盟範圍<i class="med"></i>中位數</span></div>
+    <div class="chart" id="career"></div>
     <div class="scroll"><table id="alltime-table"></table></div>
   </section>
 
   <section id="h2h">
     <div class="sec-head"><h2>歷史交手</h2></div>
     <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm po"></span>季後賽</span></div>
-    <div class="ch"><h3>生涯對戰淨勝場</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
-    <div class="chart" id="career"></div>
     <div class="vs-list" id="vs-list"></div>
     <div class="mhead"><h3>全聯盟交手表</h3><div class="tabs" id="matrix-tabs" role="group" aria-label="比賽範圍"></div></div>
     <div class="scroll"><table class="matrix" id="matrix"></table></div>
@@ -475,13 +479,20 @@ const SPAN = OFF[YEARS[YEARS.length - 1]] + Math.max(...MGRS.flatMap(m => G[m].f
 const NET = Object.fromEntries(MGRS.map(m => { let n = 0; return [m, G[m].map(g => ({ ...g, x: OFF[g.y] + g.w, n: n += Math.sign(g.sa - g.sb) }))]; }));
 function drawCareer() {
   const box = document.getElementById("career");
-  const padT = 26, padB = 8, padL = 30, padR = 40, H = 260;
+  const padT = 26, padB = 8, padL = 30, padR = 96, H = 260;
   const { W, svg, tip } = chartShell(box, H);
-  svg.setAttribute("aria-label", `${DISP(cur)} 三季累計對戰淨勝場`);
-  const all = MGRS.flatMap(m => NET[m].map(p => p.n));
-  const lo = Math.floor(Math.min(0, ...all) / 10) * 10, hi = Math.ceil(Math.max(0, ...all) / 10) * 10;
+  svg.setAttribute("aria-label", `${DISP(cur)} 三季累計對戰淨勝場與全聯盟範圍`);
+  // 每個時間點每人的累計值（沒比賽的週沿用上一個值，沒進季後賽的人線不會提早斷）
+  const XS = [0, ...new Set(MGRS.flatMap(m => NET[m].map(p => p.x)))].sort((a, b) => a - b);
+  const at = m => { let i = 0, v = 0; return XS.map(x => { while (i < NET[m].length && NET[m][i].x <= x) v = NET[m][i++].n; return v; }); };
+  const V = Object.fromEntries(MGRS.map(m => [m, at(m)]));
+  const cols = XS.map((x, i) => MGRS.map(m => V[m][i]).sort((a, b) => a - b));
+  const mn = cols.map(c => c[0]), mx = cols.map(c => c[c.length - 1]), md = cols.map(c => (c[(c.length - 1) >> 1] + c[c.length >> 1]) / 2);
+  const rankAt = i => 1 + MGRS.filter(m => V[m][i] > V[cur][i]).length;
+  const lo = Math.floor(Math.min(0, ...mn) / 10) * 10, hi = Math.ceil(Math.max(0, ...mx) / 10) * 10;
   const X = x => padL + x * (W - padL - padR) / SPAN, Y = v => padT + (hi - v) * (H - padT - padB) / (hi - lo);
   const g = sv("g", {}, svg);
+  sv("path", { class: "band", d: pathD(XS.map((x, i) => [X(x), Y(mx[i])])) + pathD([...XS].reverse().map((x, j) => [X(x), Y(mn[XS.length - 1 - j])])).replace(/^M/, "L") + "Z" }, g);
   for (let v = lo; v <= hi; v += 10) {
     sv("line", { class: v === 0 ? "zero" : "grid", x1: padL, x2: W - padR, y1: Y(v), y2: Y(v) }, g);
     svText(sgn(v), { x: padL - 6, y: Y(v) + 4.5, "text-anchor": "end" }, g);
@@ -490,19 +501,25 @@ function drawCareer() {
     if (OFF[y]) sv("line", { class: "grid", x1: X(OFF[y]), x2: X(OFF[y]), y1: padT - 4, y2: H - padB }, g);
     svText(season(y), { x: X(OFF[y]) + 6, y: 14 }, g);
   }
-  drawLines(g, MGRS.map(m => [m, [[X(0), Y(0)], ...NET[m].map(p => [X(p.x), Y(p.n)])]]), cur);
-  const pts = NET[cur], last = pts[pts.length - 1];
-  sv("circle", { class: "dot", cx: X(last.x), cy: Y(last.n), r: 4.5 }, g);
-  svText(sgn(last.n), { x: X(last.x) + 8, y: Y(last.n) + 4.5, class: "on" }, g);
+  sv("path", { class: "med", d: pathD(XS.map((x, i) => [X(x), Y(md[i])])) }, g);
+  const mine = XS.map((x, i) => [X(x), Y(V[cur][i])]);
+  sv("path", { class: "ring", d: pathD(mine) }, g);
+  sv("path", { class: "ln on", d: pathD(mine) }, g);
+  const li = XS.length - 1, lv = V[cur][li];
+  sv("circle", { class: "dot", cx: X(XS[li]), cy: Y(lv), r: 4.5 }, g);
+  svText(`${sgn(lv)}  聯盟第 ${rankAt(li)}`, { x: X(XS[li]) + 10, y: Y(lv) + 4.5, class: "on" }, g);
   const xh = sv("line", { class: "xh", y1: padT - 4, y2: H - padB, visibility: "hidden" }, svg);
   const dot = sv("circle", { class: "dot", r: 4.5, visibility: "hidden" }, svg);
   const move = ev => {
     const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
-    const p = pts.reduce((a, b) => Math.abs(X(b.x) - px) < Math.abs(X(a.x) - px) ? b : a);
-    xh.setAttribute("x1", X(p.x)); xh.setAttribute("x2", X(p.x)); xh.setAttribute("visibility", "visible");
-    dot.setAttribute("cx", X(p.x)); dot.setAttribute("cy", Y(p.n)); dot.setAttribute("visibility", "visible");
-    const k = p.sa > p.sb ? ["w", "勝"] : p.sa < p.sb ? ["l", "敗"] : ["", "和"];
-    placeTip(box, tip, X(p.x) * bx.width / W, `<b>${season(p.y)} 第 ${p.w} 週${p.po ? "（季後賽）" : ""}</b><br>vs ${esc(DISP(p.o))} <span class="${k[0]}">${p.sa}-${p.sb} ${k[1]}</span>　累計 ${sgn(p.n)}`);
+    let i = 0; XS.forEach((x, j) => { if (Math.abs(X(x) - px) < Math.abs(X(XS[i]) - px)) i = j; });
+    const x = XS[i], v = V[cur][i], gm = NET[cur].find(p => p.x === x);
+    xh.setAttribute("x1", X(x)); xh.setAttribute("x2", X(x)); xh.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", X(x)); dot.setAttribute("cy", Y(v)); dot.setAttribute("visibility", "visible");
+    const yr = [...YEARS].reverse().find(y => OFF[y] <= x), wk = x - OFF[yr];
+    let line2 = "沒有比賽";
+    if (gm) { const k = gm.sa > gm.sb ? ["w", "勝"] : gm.sa < gm.sb ? ["l", "敗"] : ["", "和"]; line2 = `vs ${esc(DISP(gm.o))} <span class="${k[0]}">${gm.sa}-${gm.sb} ${k[1]}</span>`; }
+    placeTip(box, tip, X(x) * bx.width / W, `<b>${season(yr)} 第 ${wk} 週${gm && gm.po ? "（季後賽）" : ""}</b><br>${line2}<br>累計 ${sgn(v)}　聯盟第 ${rankAt(i)}　中位數 ${sgn(Math.round(md[i] * 2) / 2)}`);
   };
   const leave = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
   svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
