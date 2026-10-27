@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>TW+ H2H 聯盟名人堂</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 球館天花板掛的冠軍旗幟開場，往下是一季一季的記分板、走勢、交手表、紀錄牆。
+   顏色全部取自 Radix Colors：slate（中性）、ruby（旗幟與選中的經理）、amber（冠軍）、grass / red（勝負）。
+   字級只用四階：13 / 15 / 24 / 顯示級。線條 0.5px。 */
+:root {
+  --bg: #fcfcfd;        /* slate 1 */
+  --panel: #f9f9fb;     /* slate 2 */
+  --hover: #f0f0f3;     /* slate 3 */
+  --step: #e8e8ec;      /* slate 4 */
+  --line: #d9d9e0;      /* slate 6 */
+  --line2: #b9bbc6;     /* slate 8 */
+  --muted: #60646c;     /* slate 11 */
+  --ink: #1c2024;       /* slate 12 */
+  --banner: #ca244d;    /* ruby 11：白字要 4.5:1，9/10 階不夠 */
+  --banner-ink: #fff;
+  --accent: #e54666;    /* ruby 9：選中經理的線 */
+  --accent-text: #ca244d; /* ruby 11 */
+  --gold: #ffc53d;      /* amber 9 */
+  --gold-ink: #4f3422;  /* amber 12 */
+  --gold-text: #ab6400; /* amber 11 */
+  --win: #2a7e3b;       /* grass 11 */
+  --loss: #ce2c31;      /* red 11 */
+  --heat-w: 70, 167, 88;  /* grass 9 */
+  --heat-l: 229, 72, 77;  /* red 9 */
+  --fs-s: 13px; --fs-m: 15px; --fs-l: 24px; --fs-xl: clamp(32px, 5vw, 48px);
+  --display: "Barlow Condensed", "Noto Sans TC", "Arial Narrow", sans-serif;
+  --body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111113; --panel: #18191b; --hover: #212225; --step: #272a2d; --line: #363a3f; --line2: #5a6169;
+    --muted: #b0b4ba; --ink: #edeef0; --banner: #ca244d; --accent: #e54666; --accent-text: #ff949d;
+    --gold: #ffc53d; --gold-text: #ffca16; --win: #71d083; --loss: #ff9592; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111113; --panel: #18191b; --hover: #212225; --step: #272a2d; --line: #363a3f; --line2: #5a6169;
+  --muted: #b0b4ba; --ink: #edeef0; --banner: #ca244d; --accent: #e54666; --accent-text: #ff949d;
+  --gold: #ffc53d; --gold-text: #ffca16; --win: #71d083; --loss: #ff9592; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: var(--fs-m); line-height: 1.6; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; }
+
+/* rafters */
+.head { padding-block: 40px 0; }
+.head h1 { font-weight: 900; font-size: var(--fs-xl); line-height: 1.05; letter-spacing: -.01em; }
+.head p { margin: 8px 0 0; color: var(--muted); }
+.rafters { position: relative; padding-block: 32px 8px; }
+.rafters::before { content: ""; position: absolute; left: 0; right: 0; top: 32px; height: 3px; background: var(--line); }
+.banners { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(10px, 3vw, 36px); margin-top: -3px; }
+.flag { background: var(--banner); color: var(--banner-ink); padding: 24px 12px 54px; text-align: center;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 30px), 0 100%); display: grid; gap: 2px; justify-items: center; }
+.flag .yr { font: 800 var(--fs-xl) var(--display); line-height: 1; font-variant-numeric: tabular-nums; }
+.flag .who { font-weight: 900; font-size: var(--fs-l); line-height: 1.2; margin-top: 10px; }
+.flag .tm { font-size: var(--fs-s); font-weight: 500; overflow-wrap: anywhere; }
+.flag .fr { font: 600 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(10px, 3vw, 36px); margin-top: 12px; font-size: var(--fs-s); color: var(--muted); text-align: center; }
+.podium b { color: var(--ink); font-weight: 700; }
+
+section { margin-top: 64px; display: grid; gap: 16px; }
+.sec-head { border-bottom: 0.5px solid var(--line2); padding-bottom: 8px; }
+.sec-head h2 { font-size: var(--fs-l); font-weight: 900; }
+h3 { font-size: var(--fs-m); font-weight: 700; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 600 var(--fs-m) var(--display); padding: 4px 14px; border: 0.5px solid var(--line2); background: transparent; color: var(--ink); cursor: pointer; }
+.tab:hover { background: var(--hover); }
+.tab[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tab:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font: 500 var(--fs-s) var(--body); color: var(--muted); padding: 8px 10px; border-bottom: 0.5px solid var(--line2); white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 0.5px solid var(--line); vertical-align: middle; }
+td.r, th.r { text-align: right; }
+.rank { font: 700 var(--fs-l) var(--display); width: 2em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rank.p1 { color: var(--gold-text); }
+.tname { font-weight: 700; overflow-wrap: anywhere; }
+.tname.blank { color: var(--muted); font-weight: 400; }
+.mgr { color: var(--muted); font-size: var(--fs-s); }
+.cut td { border-bottom: 0.5px dashed var(--line2); }
+.medal { display: inline-block; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; padding: 0 5px; margin-left: 6px; vertical-align: 1px; color: var(--muted); }
+.m1 { background: var(--gold); color: var(--gold-ink); }
+
+.fin { display: inline-grid; place-items: center; width: 30px; height: 26px; font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; color: var(--muted); }
+.fin.f1 { background: var(--gold); color: var(--gold-ink); }
+.fin.f2, .fin.f3 { background: var(--step); color: var(--ink); }
+.fins { display: flex; gap: 4px; }
+th button { all: unset; cursor: pointer; }
+th button:hover { color: var(--ink); }
+th button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+th[aria-sort] button { color: var(--ink); font-weight: 700; }
+.podium .more { display: block; margin-top: 4px; }
+
+/* charts */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; }
+.chart text { font: 500 var(--fs-s) var(--body); fill: var(--muted); }
+.chart text.on { fill: var(--ink); font-weight: 700; }
+.chart .ln { fill: none; stroke: var(--line2); stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; }
+.chart .ln.on { stroke: var(--accent); stroke-width: 2.5; }
+.chart .ring { fill: none; stroke: var(--bg); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+.chart .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
+.chart .grid { stroke: var(--line); stroke-width: 0.5; }
+.chart .zero { stroke: var(--line2); stroke-width: 0.5; }
+.chart .cut { stroke: var(--line2); stroke-width: 0.5; stroke-dasharray: 3 3; }
+.chart .xh { stroke: var(--muted); stroke-width: 0.5; }
+.chart .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+.chart .lab { cursor: pointer; }
+.tip { position: absolute; top: 0; pointer-events: none; background: var(--panel); border: 0.5px solid var(--line2); padding: 6px 10px; font-size: var(--fs-s); line-height: 1.5; white-space: nowrap; z-index: 2; }
+.tip b { font-weight: 700; }
+.tip .w { color: var(--win); } .tip .l { color: var(--loss); }
+
+/* top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 0.5px solid var(--line); margin-top: 24px; }
+.bar-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 8px; }
+.bar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.bar a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.bar a:hover { color: var(--ink); }
+.bar a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.who-pick { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.who-pick label { color: var(--muted); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+section { scroll-margin-top: 64px; }
+.ch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.key { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 2.5px; background: var(--accent); }
+.key i.g { height: 1.25px; background: var(--line2); }
+.key b { color: var(--ink); }
+/* games as squares */
+.games { display: flex; flex-wrap: wrap; gap: 3px; }
+.gm { width: 16px; height: 16px; display: inline-block; }
+.gm.w { background: var(--win); } .gm.l { background: var(--loss); } .gm.t { background: var(--line2); }
+.gm.po { box-shadow: inset 0 0 0 2px var(--gold); }
+/* h2h */
+.h2h-pick { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(--panel); color: var(--ink); border: 0.5px solid var(--line2); }
+.vs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px; }
+.vs { background: var(--panel); border: 0.5px solid var(--line); padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+.vs-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.vs-rec { font: 700 var(--fs-l) var(--display); font-variant-numeric: tabular-nums; }
+.vs-rec.up { color: var(--win); } .vs-rec.down { color: var(--loss); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; padding: 0 6px; }
+.chip.w { background: rgba(var(--heat-w), .16); color: var(--win); }
+.chip.l { background: rgba(var(--heat-l), .14); color: var(--loss); }
+.chip.t { background: var(--step); color: var(--muted); }
+.chip.po { box-shadow: inset 0 0 0 1px var(--gold); }
+.legend { font-size: var(--fs-s); color: var(--muted); }
+
+.matrix td, .matrix th { padding: 0; border: 1px solid var(--bg); text-align: center; }
+.matrix th { font: 500 var(--fs-s) var(--body); color: var(--ink); padding: 6px 4px; white-space: nowrap; background: var(--panel); }
+.matrix th.row { text-align: right; padding-right: 8px; position: sticky; left: 0; z-index: 1; }
+.matrix td { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; min-width: 50px; height: 34px; color: var(--ink); cursor: pointer; }
+.matrix td.self { background: var(--panel); color: var(--muted); cursor: default; }
+.matrix td.tot { font-weight: 800; background: var(--panel); cursor: default; }
+.matrix tr.sel th.row, .matrix tr.sel td.tot { color: var(--accent-text); font-weight: 700; }
+
+/* records */
+.recs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 10px; }
+.rec { background: var(--panel); border: 0.5px solid var(--line); padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+.rec .k { font-size: var(--fs-s); color: var(--muted); }
+.rec .v { font: 800 var(--fs-l) var(--display); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.rec .who { font-weight: 700; overflow-wrap: anywhere; }
+.rec .when { font-size: var(--fs-s); color: var(--muted); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px; margin-top: 16px; }
+.two h3 { margin-bottom: 4px; }
+.streak { display: grid; grid-template-columns: 3.2em 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--line); }
+.streak .n { font: 800 var(--fs-l) var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+.streak .n.w { color: var(--win); } .streak .n.l { color: var(--loss); }
+.streak .d { min-width: 0; }
+.streak .when { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; }
+
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 28px; }
+.nm { padding: 10px 0; border-bottom: 0.5px solid var(--line); display: grid; gap: 4px; min-width: 0; }
+.nm ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.nm li { display: grid; grid-template-columns: 3em 1fr; gap: 6px; overflow-wrap: anywhere; }
+.nm li span { font: 600 var(--fs-m) var(--display); color: var(--muted); }
+.nm li i { font-style: normal; color: var(--muted); }
+footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line); font-size: var(--fs-s); color: var(--muted); display: grid; gap: 4px; }
+@media (max-width: 560px) {
+  .banners, .podium { gap: 8px; }
+  .flag { padding: 18px 6px 46px; }
+  .flag .tm { display: none; }
+  .hide-sm { display: none; }
+}
+</style>
+</head>
+<body style="margin:0">
+
+
+<div class="wrap">
+  <header class="head">
+    <h1>TW+ H2H 聯盟名人堂</h1>
+    <p>Yahoo Fantasy NBA，14 隊 12 類別 H2H。2023–24 到 2025–26 三季，共 <span class="num" id="n-games"></span> 場對戰。</p>
+  </header>
+
+  <div class="rafters">
+    <div class="banners" id="banners"></div>
+    <div class="podium" id="podium"></div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-in">
+      <nav aria-label="段落"><a href="#standings">歷季排名</a><a href="#alltime">三季總表</a><a href="#h2h">歷史交手</a><a href="#records">紀錄牆</a><a href="#names">隊名</a></nav>
+      <div class="who-pick"><label for="mgr-select">看誰</label><select id="mgr-select"></select></div>
+    </div>
+  </div>
+
+  <section id="standings">
+    <div class="sec-head"><h2>歷季排名</h2></div>
+    <div class="tabs" id="season-tabs" role="group" aria-label="選擇球季"></div>
+    <div class="ch"><h3>例行賽排名走勢</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
+    <div class="chart" id="bump"></div>
+    <div class="scroll"><table id="season-table"></table></div>
+  </section>
+
+  <section id="alltime">
+    <div class="sec-head"><h2>三季總表</h2></div>
+    <div class="ch"><h3>歷年最終名次</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
+    <div class="chart" id="finals"></div>
+    <div class="scroll"><table id="alltime-table"></table></div>
+  </section>
+
+  <section id="h2h">
+    <div class="sec-head"><h2>歷史交手</h2></div>
+    <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm po"></span>季後賽</span></div>
+    <div class="ch"><h3>生涯對戰淨勝場</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
+    <div class="chart" id="career"></div>
+    <div class="vs-list" id="vs-list"></div>
+    <h3 style="margin-top:16px">全聯盟交手表</h3>
+    <div class="scroll"><table class="matrix" id="matrix"></table></div>
+  </section>
+
+  <section id="records">
+    <div class="sec-head"><h2>紀錄牆</h2></div>
+    <div class="recs" id="cat-recs"></div>
+    <div class="two">
+      <div><h3>最長連勝 / 連敗</h3><div id="streaks"></div></div>
+      <div><h3>最懸殊的比分</h3><div id="blowouts"></div></div>
+    </div>
+  </section>
+
+  <section id="names">
+    <div class="sec-head"><h2>隊名博物館</h2></div>
+    <div class="names" id="name-list"></div>
+  </section>
+
+  <footer>
+    <div>資料來源：Yahoo Fantasy 聯盟頁面，逐場比分已用各隊賽程頁交叉核對。</div>
+    <div>名次為最終名次，含季後賽與第 5–8 名排名賽；虛線以上進季後賽。排名走勢與例行賽第一依例行賽累計類別勝率。墊底＝最終第 14 名。</div>
+    <div>單週類別紀錄只算 7 天的正常週，不含全明星週等 14 天長週。</div>
+  </footer>
+</div>
+
+<script>
+const D = {"seasons": {"2023": {"table": [{"rank": 1, "team": "大餅笑哈哈", "mgr": "大餅", "cat": [151, 97, 4]}, {"rank": 2, "team": "安迪幫", "mgr": "ANDY", "cat": [138, 108, 6]}, {"rank": 3, "team": "LeslieL's Glorious Team", "mgr": "LeslieL", "cat": [133, 117, 2]}, {"rank": 4, "team": "我大魯阿肥賈奈特夫顥戰隊H2H", "mgr": "魯夫顥", "cat": [135, 115, 2]}, {"rank": 5, "team": "正然君子", "mgr": "煥然", "cat": [143, 106, 3]}, {"rank": 6, "team": "What time is it", "mgr": "新一", "cat": [138, 111, 3]}, {"rank": 7, "team": "艋舺小水怪", "mgr": "Scott", "cat": [141, 107, 4]}, {"rank": 8, "team": "👼 Allen", "mgr": "Allen", "cat": [129, 120, 3]}, {"rank": 9, "team": "霍華德", "mgr": "HowardCommissioner", "cat": [127, 119, 6]}, {"rank": 10, "team": "齁齁做歹誌", "mgr": "Steven PI", "cat": [112, 138, 2]}, {"rank": 11, "team": "信ㄌㄨㄚˋTaiwan", "mgr": "Kevin", "cat": [108, 141, 3]}, {"rank": 12, "team": "哈孝遠刺配滄洲道簡嘉宏大鬧野豬林", "mgr": "大仙", "cat": [102, 146, 4]}, {"rank": 13, "team": "OBEAR", "mgr": "OBEAR", "cat": [97, 151, 4]}, {"rank": 14, "team": "PoKai's Pleasant Team", "mgr": "PoKai", "cat": [85, 163, 4]}], "podium": ["大餅", "ANDY", "LeslieL"]}, "2024": {"table": [{"rank": 1, "team": "霍華德", "mgr": "HowardCommissioner", "cat": [146, 91, 3]}, {"rank": 2, "team": "轉運手", "mgr": "Steven PI", "cat": [122, 115, 3]}, {"rank": 3, "team": "信ㄌㄨㄚˋTaiwan", "mgr": "Kevin", "cat": [119, 120, 1]}, {"rank": 4, "team": "2486", "mgr": "PoKai", "cat": [128, 106, 6]}, {"rank": 5, "team": "大餅你好！", "mgr": "大餅", "cat": [151, 86, 3]}, {"rank": 6, "team": "正然君子", "mgr": "煥然", "cat": [145, 93, 2]}, {"rank": 7, "team": "阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特", "mgr": "新一", "cat": [123, 111, 6]}, {"rank": 8, "team": "被ROSÉ暴擊了", "mgr": "魯夫顥", "cat": [122, 116, 2]}, {"rank": 9, "team": "必勝神登💡", "mgr": "Allen", "cat": [116, 122, 2]}, {"rank": 10, "team": "安迪幫", "mgr": "ANDY", "cat": [109, 128, 3]}, {"rank": 11, "team": "相信顥董 年底就懂", "mgr": "Scott", "cat": [109, 130, 1]}, {"rank": 12, "team": "LeslieL's Glorious Team", "mgr": "LeslieL", "cat": [103, 134, 3]}, {"rank": 13, "team": "OBEAR", "mgr": "OBEAR", "cat": [94, 144, 2]}, {"rank": 14, "team": "飛天大盜 胡亮", "mgr": "大仙", "cat": [74, 165, 1]}], "podium": ["HowardCommissioner", "Steven PI", "Kevin"]}, "2025": {"table": [{"rank": 1, "team": "155 - 95 - 2", "mgr": "PoKai", "cat": [155, 95, 2]}, {"rank": 2, "team": "149-101-2", "mgr": "魯夫顥", "cat": [149, 101, 2]}, {"rank": 3, "team": "正然君子丸", "mgr": "煥然", "cat": [153, 99, 0]}, {"rank": 4, "team": "霍華德", "mgr": "HowardCommissioner", "cat": [131, 118, 3]}, {"rank": 5, "team": "安迪幫幫忙", "mgr": "ANDY", "cat": [150, 99, 3]}, {"rank": 6, "team": "❤️小政政❤️", "mgr": "OBEAR", "cat": [135, 115, 2]}, {"rank": 7, "team": "", "mgr": "大仙", "cat": [128, 122, 2]}, {"rank": 8, "team": "😀大餅餅😀", "mgr": "大餅", "cat": [128, 120, 4]}, {"rank": 9, "team": "國會議員", "mgr": "Steven PI", "cat": [116, 132, 4]}, {"rank": 10, "team": "咕嚕咕嚕", "mgr": "新一", "cat": [118, 134, 0]}, {"rank": 11, "team": "我絕對跟你拚了", "mgr": "Scott", "cat": [114, 137, 1]}, {"rank": 12, "team": "LeslieL's Glorious Team", "mgr": "LeslieL", "cat": [103, 149, 0]}, {"rank": 13, "team": "有狐狸有羊羊🗽", "mgr": "Allen", "cat": [102, 149, 1]}, {"rank": 14, "team": "信ㄌㄨㄚˋTaiwan", "mgr": "Kevin", "cat": [70, 182, 0]}], "podium": ["PoKai", "魯夫顥", "煥然"]}}, "names": {"大餅": {"2023": "大餅笑哈哈", "2024": "大餅你好！", "2025": "😀大餅餅😀"}, "ANDY": {"2023": "安迪幫", "2024": "安迪幫", "2025": "安迪幫幫忙"}, "LeslieL": {"2023": "LeslieL's Glorious Team", "2024": "LeslieL's Glorious Team", "2025": "LeslieL's Glorious Team"}, "魯夫顥": {"2023": "我大魯阿肥賈奈特夫顥戰隊H2H", "2024": "被ROSÉ暴擊了", "2025": "149-101-2"}, "煥然": {"2023": "正然君子", "2024": "正然君子", "2025": "正然君子丸"}, "新一": {"2023": "What time is it", "2024": "阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特阿帕特", "2025": "咕嚕咕嚕"}, "Scott": {"2023": "艋舺小水怪", "2024": "相信顥董 年底就懂", "2025": "我絕對跟你拚了"}, "Allen": {"2023": "👼 Allen", "2024": "必勝神登💡", "2025": "有狐狸有羊羊🗽"}, "HowardCommissioner": {"2023": "霍華德", "2024": "霍華德", "2025": "霍華德"}, "Steven PI": {"2023": "齁齁做歹誌", "2024": "轉運手", "2025": "國會議員"}, "Kevin": {"2023": "信ㄌㄨㄚˋTaiwan", "2024": "信ㄌㄨㄚˋTaiwan", "2025": "信ㄌㄨㄚˋTaiwan"}, "大仙": {"2023": "哈孝遠刺配滄洲道簡嘉宏大鬧野豬林", "2024": "飛天大盜 胡亮", "2025": ""}, "OBEAR": {"2023": "OBEAR", "2024": "OBEAR", "2025": "❤️小政政❤️"}, "PoKai": {"2023": "PoKai's Pleasant Team", "2024": "2486", "2025": "155 - 95 - 2"}}, "h2h": {"ANDY": {"Allen": {"w": 2, "l": 1, "t": 0, "cw": 22, "cl": 14, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 9, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 11, "playoff": false, "score": "9-3"}]}, "HowardCommissioner": {"w": 1, "l": 3, "t": 1, "cw": 22, "cl": 38, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 6, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 19, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 12, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 22, "playoff": true, "score": "4-8"}]}, "Kevin": {"w": 3, "l": 1, "t": 1, "cw": 36, "cl": 23, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "5-6"}, {"season": 2023, "week": 15, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 6, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 19, "playoff": false, "score": "9-3"}]}, "LeslieL": {"w": 3, "l": 1, "t": 0, "cw": 28, "cl": 20, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 20, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 9, "playoff": false, "score": "9-3"}]}, "OBEAR": {"w": 4, "l": 2, "t": 0, "cw": 32, "cl": 37, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "6-5"}, {"season": 2023, "week": 16, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 18, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 13, "playoff": false, "score": "1-10"}, {"season": 2025, "week": 24, "playoff": true, "score": "8-4"}]}, "PoKai": {"w": 4, "l": 2, "t": 0, "cw": 37, "cl": 34, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 17, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 1, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 14, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 14, "playoff": false, "score": "1-11"}]}, "Scott": {"w": 3, "l": 1, "t": 0, "cw": 28, "cl": 18, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "5-6"}, {"season": 2024, "week": 8, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 3, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 16, "playoff": false, "score": "10-2"}]}, "Steven PI": {"w": 3, "l": 1, "t": 0, "cw": 29, "cl": 18, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 11, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 7, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 20, "playoff": false, "score": "7-4"}]}, "大仙": {"w": 5, "l": 0, "t": 1, "cw": 53, "cl": 19, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 18, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 13, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 5, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 18, "playoff": false, "score": "11-1"}, {"season": 2025, "week": 23, "playoff": true, "score": "11-1"}]}, "大餅": {"w": 1, "l": 4, "t": 1, "cw": 25, "cl": 45, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 19, "playoff": false, "score": "2-9"}, {"season": 2023, "week": 24, "playoff": true, "score": "2-10"}, {"season": 2024, "week": 2, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 15, "playoff": false, "score": "3-8"}, {"season": 2025, "week": 10, "playoff": false, "score": "6-6"}]}, "新一": {"w": 6, "l": 0, "t": 1, "cw": 54, "cl": 30, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 21, "playoff": false, "score": "10-2"}, {"season": 2023, "week": 22, "playoff": true, "score": "7-5"}, {"season": 2024, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 17, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 2, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 15, "playoff": false, "score": "8-4"}]}, "煥然": {"w": 3, "l": 3, "t": 0, "cw": 35, "cl": 36, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "7-4"}, {"season": 2023, "week": 14, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 3, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 16, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 4, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 17, "playoff": false, "score": "9-3"}]}, "魯夫顥": {"w": 3, "l": 3, "t": 0, "cw": 35, "cl": 36, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 20, "playoff": false, "score": "9-2"}, {"season": 2023, "week": 23, "playoff": true, "score": "7-5"}, {"season": 2024, "week": 12, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 21, "playoff": false, "score": "3-9"}]}}, "Allen": {"ANDY": {"w": 1, "l": 2, "t": 0, "cw": 14, "cl": 22, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 9, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 11, "playoff": false, "score": "3-9"}]}, "HowardCommissioner": {"w": 2, "l": 3, "t": 0, "cw": 32, "cl": 26, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "11-0"}, {"season": 2023, "week": 14, "playoff": false, "score": "2-9"}, {"season": 2024, "week": 12, "playoff": false, "score": "11-1"}, {"season": 2025, "week": 7, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 20, "playoff": false, "score": "3-9"}]}, "Kevin": {"w": 4, "l": 2, "t": 0, "cw": 41, "cl": 31, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 18, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 3, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 16, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 1, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 14, "playoff": false, "score": "9-3"}]}, "LeslieL": {"w": 2, "l": 2, "t": 1, "cw": 33, "cl": 27, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 16, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 13, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 17, "playoff": false, "score": "9-3"}]}, "OBEAR": {"w": 4, "l": 1, "t": 0, "cw": 33, "cl": 26, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 19, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 11, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 8, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 21, "playoff": false, "score": "2-10"}]}, "PoKai": {"w": 1, "l": 4, "t": 0, "cw": 24, "cl": 34, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "1-11"}, {"season": 2023, "week": 20, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 7, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 20, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 9, "playoff": false, "score": "4-7"}]}, "Scott": {"w": 3, "l": 3, "t": 1, "cw": 39, "cl": 45, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 15, "playoff": false, "score": "1-11"}, {"season": 2023, "week": 24, "playoff": true, "score": "4-8"}, {"season": 2024, "week": 1, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 6, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 19, "playoff": false, "score": "7-5"}]}, "Steven PI": {"w": 3, "l": 2, "t": 0, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 4, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 17, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 15, "playoff": false, "score": "4-8"}]}, "大仙": {"w": 3, "l": 2, "t": 0, "cw": 29, "cl": 31, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 21, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 6, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 19, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 13, "playoff": false, "score": "1-11"}]}, "大餅": {"w": 1, "l": 3, "t": 1, "cw": 21, "cl": 39, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 22, "playoff": true, "score": "3-9"}, {"season": 2024, "week": 8, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 18, "playoff": false, "score": "2-10"}]}, "新一": {"w": 1, "l": 2, "t": 0, "cw": 15, "cl": 20, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 10, "playoff": false, "score": "4-7"}, {"season": 2025, "week": 10, "playoff": false, "score": "2-10"}]}, "煥然": {"w": 0, "l": 6, "t": 0, "cw": 25, "cl": 47, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 17, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 23, "playoff": true, "score": "5-7"}, {"season": 2024, "week": 2, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 15, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 12, "playoff": false, "score": "4-8"}]}, "魯夫顥": {"w": 0, "l": 3, "t": 2, "cw": 23, "cl": 37, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 18, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 3, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 16, "playoff": false, "score": "4-8"}]}}, "HowardCommissioner": {"ANDY": {"w": 3, "l": 1, "t": 1, "cw": 38, "cl": 22, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 6, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 19, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 12, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 22, "playoff": true, "score": "8-4"}]}, "Allen": {"w": 3, "l": 2, "t": 0, "cw": 26, "cl": 32, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "0-11"}, {"season": 2023, "week": 14, "playoff": false, "score": "9-2"}, {"season": 2024, "week": 12, "playoff": false, "score": "1-11"}, {"season": 2025, "week": 7, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 20, "playoff": false, "score": "9-3"}]}, "Kevin": {"w": 5, "l": 1, "t": 0, "cw": 45, "cl": 27, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 19, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 13, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 22, "playoff": true, "score": "7-5"}, {"season": 2025, "week": 2, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 15, "playoff": false, "score": "8-4"}]}, "LeslieL": {"w": 3, "l": 0, "t": 2, "cw": 36, "cl": 24, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 10, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 18, "playoff": false, "score": "7-5"}]}, "OBEAR": {"w": 2, "l": 2, "t": 0, "cw": 27, "cl": 19, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "4-6"}, {"season": 2023, "week": 20, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 8, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 9, "playoff": false, "score": "5-7"}]}, "PoKai": {"w": 3, "l": 2, "t": 1, "cw": 38, "cl": 32, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "8-3"}, {"season": 2023, "week": 21, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 4, "playoff": false, "score": "3-8"}, {"season": 2024, "week": 17, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 10, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 23, "playoff": true, "score": "6-6"}]}, "Scott": {"w": 2, "l": 2, "t": 1, "cw": 28, "cl": 32, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 16, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 11, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 8, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 21, "playoff": false, "score": "2-10"}]}, "Steven PI": {"w": 4, "l": 1, "t": 1, "cw": 45, "cl": 26, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "8-3"}, {"season": 2024, "week": 1, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 14, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 23, "playoff": true, "score": "8-4"}, {"season": 2025, "week": 3, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 16, "playoff": false, "score": "11-1"}]}, "大仙": {"w": 3, "l": 2, "t": 0, "cw": 35, "cl": 23, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 3, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 16, "playoff": false, "score": "10-1"}, {"season": 2025, "week": 1, "playoff": false, "score": "3-8"}, {"season": 2025, "week": 14, "playoff": false, "score": "8-4"}]}, "大餅": {"w": 2, "l": 1, "t": 2, "cw": 36, "cl": 23, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 5, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 18, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 6, "playoff": false, "score": "9-2"}, {"season": 2025, "week": 19, "playoff": false, "score": "6-6"}]}, "新一": {"w": 0, "l": 3, "t": 1, "cw": 20, "cl": 27, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 7, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 20, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 11, "playoff": false, "score": "5-7"}]}, "煥然": {"w": 1, "l": 4, "t": 0, "cw": 25, "cl": 35, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 18, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 9, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 13, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 24, "playoff": true, "score": "5-7"}]}, "魯夫顥": {"w": 4, "l": 3, "t": 0, "cw": 47, "cl": 36, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 15, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 2, "playoff": false, "score": "11-1"}, {"season": 2024, "week": 15, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 21, "playoff": true, "score": "8-4"}, {"season": 2025, "week": 4, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 17, "playoff": false, "score": "5-7"}]}}, "Kevin": {"ANDY": {"w": 1, "l": 3, "t": 1, "cw": 23, "cl": 36, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "6-5"}, {"season": 2023, "week": 15, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 6, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 19, "playoff": false, "score": "3-9"}]}, "Allen": {"w": 2, "l": 4, "t": 0, "cw": 31, "cl": 41, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 18, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 3, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 16, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 1, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 14, "playoff": false, "score": "3-9"}]}, "HowardCommissioner": {"w": 1, "l": 5, "t": 0, "cw": 27, "cl": 45, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 19, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 13, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 22, "playoff": true, "score": "5-7"}, {"season": 2025, "week": 2, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 15, "playoff": false, "score": "4-8"}]}, "LeslieL": {"w": 0, "l": 3, "t": 2, "cw": 18, "cl": 42, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 21, "playoff": false, "score": "1-11"}, {"season": 2024, "week": 1, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 14, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 12, "playoff": false, "score": "1-11"}]}, "OBEAR": {"w": 3, "l": 1, "t": 0, "cw": 31, "cl": 17, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 12, "playoff": false, "score": "12-0"}, {"season": 2025, "week": 3, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 16, "playoff": false, "score": "3-9"}]}, "PoKai": {"w": 2, "l": 3, "t": 0, "cw": 26, "cl": 33, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 23, "playoff": true, "score": "8-3"}, {"season": 2025, "week": 4, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 17, "playoff": false, "score": "3-9"}]}, "Scott": {"w": 1, "l": 3, "t": 1, "cw": 22, "cl": 37, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "6-5"}, {"season": 2023, "week": 20, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 15, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 9, "playoff": false, "score": "6-6"}]}, "Steven PI": {"w": 0, "l": 4, "t": 1, "cw": 22, "cl": 38, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 17, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 18, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 10, "playoff": false, "score": "2-10"}]}, "大仙": {"w": 3, "l": 2, "t": 0, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 20, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 8, "playoff": false, "score": "1-11"}, {"season": 2025, "week": 21, "playoff": false, "score": "2-10"}]}, "大餅": {"w": 3, "l": 2, "t": 0, "cw": 25, "cl": 34, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "6-5"}, {"season": 2023, "week": 14, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 9, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 21, "playoff": true, "score": "7-5"}, {"season": 2025, "week": 13, "playoff": false, "score": "8-4"}]}, "新一": {"w": 0, "l": 4, "t": 1, "cw": 20, "cl": 40, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 16, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 18, "playoff": false, "score": "3-9"}]}, "煥然": {"w": 1, "l": 3, "t": 1, "cw": 24, "cl": 35, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 17, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 20, "playoff": false, "score": "4-8"}]}, "魯夫顥": {"w": 1, "l": 3, "t": 0, "cw": 18, "cl": 30, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 6, "playoff": false, "score": "11-1"}, {"season": 2024, "week": 19, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 11, "playoff": false, "score": "1-11"}]}}, "LeslieL": {"ANDY": {"w": 1, "l": 3, "t": 0, "cw": 20, "cl": 28, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 20, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 9, "playoff": false, "score": "3-9"}]}, "Allen": {"w": 2, "l": 2, "t": 1, "cw": 27, "cl": 33, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 16, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 13, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 17, "playoff": false, "score": "3-9"}]}, "HowardCommissioner": {"w": 0, "l": 3, "t": 2, "cw": 24, "cl": 36, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 10, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 18, "playoff": false, "score": "5-7"}]}, "Kevin": {"w": 3, "l": 0, "t": 2, "cw": 42, "cl": 18, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 21, "playoff": false, "score": "11-1"}, {"season": 2024, "week": 1, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 14, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 12, "playoff": false, "score": "11-1"}]}, "OBEAR": {"w": 1, "l": 2, "t": 1, "cw": 21, "cl": 26, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 9, "playoff": false, "score": "2-9"}, {"season": 2025, "week": 6, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 19, "playoff": false, "score": "5-7"}]}, "PoKai": {"w": 2, "l": 3, "t": 0, "cw": 25, "cl": 35, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 5, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 18, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 20, "playoff": false, "score": "2-10"}]}, "Scott": {"w": 2, "l": 3, "t": 0, "cw": 26, "cl": 33, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 18, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 12, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 2, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 15, "playoff": false, "score": "1-11"}]}, "Steven PI": {"w": 1, "l": 4, "t": 0, "cw": 27, "cl": 31, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "5-6"}, {"season": 2023, "week": 15, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 15, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 13, "playoff": false, "score": "5-7"}]}, "大仙": {"w": 2, "l": 2, "t": 0, "cw": 22, "cl": 26, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 4, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 17, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 11, "playoff": false, "score": "3-9"}]}, "大餅": {"w": 0, "l": 3, "t": 3, "cw": 29, "cl": 43, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 23, "playoff": true, "score": "3-9"}, {"season": 2024, "week": 6, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 3, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 16, "playoff": false, "score": "6-6"}]}, "新一": {"w": 1, "l": 4, "t": 0, "cw": 26, "cl": 33, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 14, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 8, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 21, "playoff": false, "score": "10-2"}]}, "煥然": {"w": 1, "l": 1, "t": 3, "cw": 29, "cl": 31, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 22, "playoff": true, "score": "6-6"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 10, "playoff": false, "score": "3-9"}]}, "魯夫顥": {"w": 2, "l": 5, "t": 0, "cw": 37, "cl": 47, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "10-2"}, {"season": 2023, "week": 19, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 24, "playoff": true, "score": "7-5"}, {"season": 2024, "week": 3, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 16, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 1, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 14, "playoff": false, "score": "3-9"}]}}, "OBEAR": {"ANDY": {"w": 2, "l": 4, "t": 0, "cw": 37, "cl": 32, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "5-6"}, {"season": 2023, "week": 16, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 18, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 13, "playoff": false, "score": "10-1"}, {"season": 2025, "week": 24, "playoff": true, "score": "4-8"}]}, "Allen": {"w": 1, "l": 4, "t": 0, "cw": 26, "cl": 33, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 19, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 11, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 8, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 21, "playoff": false, "score": "10-2"}]}, "HowardCommissioner": {"w": 2, "l": 2, "t": 0, "cw": 19, "cl": 27, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "6-4"}, {"season": 2023, "week": 20, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 8, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 9, "playoff": false, "score": "7-5"}]}, "Kevin": {"w": 1, "l": 3, "t": 0, "cw": 17, "cl": 31, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 12, "playoff": false, "score": "0-12"}, {"season": 2025, "week": 3, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 16, "playoff": false, "score": "9-3"}]}, "LeslieL": {"w": 2, "l": 1, "t": 1, "cw": 26, "cl": 21, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 9, "playoff": false, "score": "9-2"}, {"season": 2025, "week": 6, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 19, "playoff": false, "score": "7-5"}]}, "PoKai": {"w": 2, "l": 2, "t": 0, "cw": 22, "cl": 26, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 3, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 16, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 11, "playoff": false, "score": "3-9"}]}, "Scott": {"w": 1, "l": 1, "t": 2, "cw": 23, "cl": 25, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 21, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 10, "playoff": false, "score": "6-6"}]}, "Steven PI": {"w": 1, "l": 3, "t": 1, "cw": 18, "cl": 41, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "2-10"}, {"season": 2023, "week": 18, "playoff": false, "score": "1-11"}, {"season": 2024, "week": 13, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 4, "playoff": false, "score": "7-4"}, {"season": 2025, "week": 17, "playoff": false, "score": "6-6"}]}, "大仙": {"w": 4, "l": 2, "t": 0, "cw": 41, "cl": 31, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 14, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 15, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 2, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 15, "playoff": false, "score": "10-2"}]}, "大餅": {"w": 1, "l": 4, "t": 2, "cw": 33, "cl": 50, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 15, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 4, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 20, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 23, "playoff": true, "score": "6-5"}]}, "新一": {"w": 1, "l": 4, "t": 0, "cw": 27, "cl": 33, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 17, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 6, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 19, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 12, "playoff": false, "score": "11-1"}]}, "煥然": {"w": 1, "l": 2, "t": 2, "cw": 25, "cl": 35, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 7, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 1, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 14, "playoff": false, "score": "6-6"}]}, "魯夫顥": {"w": 1, "l": 5, "t": 0, "cw": 27, "cl": 45, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 14, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 5, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 18, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 22, "playoff": true, "score": "5-7"}]}}, "PoKai": {"ANDY": {"w": 2, "l": 4, "t": 0, "cw": 34, "cl": 37, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 17, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 1, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 14, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 14, "playoff": false, "score": "11-1"}]}, "Allen": {"w": 4, "l": 1, "t": 0, "cw": 34, "cl": 24, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "11-1"}, {"season": 2023, "week": 20, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 7, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 20, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 9, "playoff": false, "score": "7-4"}]}, "HowardCommissioner": {"w": 2, "l": 3, "t": 1, "cw": 32, "cl": 38, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "3-8"}, {"season": 2023, "week": 21, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 4, "playoff": false, "score": "8-3"}, {"season": 2024, "week": 17, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 10, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 23, "playoff": true, "score": "6-6"}]}, "Kevin": {"w": 3, "l": 2, "t": 0, "cw": 33, "cl": 26, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 23, "playoff": true, "score": "3-8"}, {"season": 2025, "week": 4, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 17, "playoff": false, "score": "9-3"}]}, "LeslieL": {"w": 3, "l": 2, "t": 0, "cw": 35, "cl": 25, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 5, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 18, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 20, "playoff": false, "score": "10-2"}]}, "OBEAR": {"w": 2, "l": 2, "t": 0, "cw": 26, "cl": 22, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 3, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 16, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 11, "playoff": false, "score": "9-3"}]}, "Scott": {"w": 1, "l": 2, "t": 1, "cw": 23, "cl": 25, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 6, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 19, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 12, "playoff": false, "score": "6-6"}]}, "Steven PI": {"w": 3, "l": 3, "t": 0, "cw": 39, "cl": 32, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "10-2"}, {"season": 2023, "week": 19, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 22, "playoff": true, "score": "5-7"}, {"season": 2025, "week": 5, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 18, "playoff": false, "score": "2-9"}]}, "大仙": {"w": 4, "l": 2, "t": 0, "cw": 44, "cl": 27, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 15, "playoff": false, "score": "2-9"}, {"season": 2024, "week": 11, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 3, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 16, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 22, "playoff": true, "score": "10-2"}]}, "大餅": {"w": 0, "l": 5, "t": 0, "cw": 19, "cl": 39, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "3-8"}, {"season": 2023, "week": 16, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 13, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 8, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 21, "playoff": false, "score": "3-9"}]}, "新一": {"w": 4, "l": 2, "t": 0, "cw": 39, "cl": 32, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "2-10"}, {"season": 2023, "week": 18, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 2, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 15, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 21, "playoff": true, "score": "9-3"}, {"season": 2025, "week": 13, "playoff": false, "score": "9-3"}]}, "煥然": {"w": 1, "l": 3, "t": 0, "cw": 16, "cl": 30, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 12, "playoff": false, "score": "1-10"}, {"season": 2025, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 15, "playoff": false, "score": "4-8"}]}, "魯夫顥": {"w": 3, "l": 2, "t": 1, "cw": 33, "cl": 38, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 14, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 10, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 6, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 24, "playoff": true, "score": "6-5"}]}}, "Scott": {"ANDY": {"w": 1, "l": 3, "t": 0, "cw": 18, "cl": 28, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "6-5"}, {"season": 2024, "week": 8, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 3, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 16, "playoff": false, "score": "2-10"}]}, "Allen": {"w": 3, "l": 3, "t": 1, "cw": 45, "cl": 39, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 15, "playoff": false, "score": "11-1"}, {"season": 2023, "week": 24, "playoff": true, "score": "8-4"}, {"season": 2024, "week": 1, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 6, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 19, "playoff": false, "score": "5-7"}]}, "HowardCommissioner": {"w": 2, "l": 2, "t": 1, "cw": 32, "cl": 28, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 16, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 11, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 8, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 21, "playoff": false, "score": "10-2"}]}, "Kevin": {"w": 3, "l": 1, "t": 1, "cw": 37, "cl": 22, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "5-6"}, {"season": 2023, "week": 20, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 15, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 9, "playoff": false, "score": "6-6"}]}, "LeslieL": {"w": 3, "l": 2, "t": 0, "cw": 33, "cl": 26, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 18, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 12, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 2, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 15, "playoff": false, "score": "11-1"}]}, "OBEAR": {"w": 1, "l": 1, "t": 2, "cw": 25, "cl": 23, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 21, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 10, "playoff": false, "score": "6-6"}]}, "PoKai": {"w": 2, "l": 1, "t": 1, "cw": 25, "cl": 23, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 6, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 19, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 12, "playoff": false, "score": "6-6"}]}, "Steven PI": {"w": 5, "l": 0, "t": 0, "cw": 43, "cl": 17, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 14, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 3, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 16, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 11, "playoff": false, "score": "8-4"}]}, "大仙": {"w": 3, "l": 0, "t": 2, "cw": 37, "cl": 21, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "8-2"}, {"season": 2024, "week": 5, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 18, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 7, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 20, "playoff": false, "score": "6-6"}]}, "大餅": {"w": 0, "l": 3, "t": 2, "cw": 22, "cl": 38, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 7, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 17, "playoff": false, "score": "4-8"}]}, "新一": {"w": 0, "l": 5, "t": 0, "cw": 19, "cl": 41, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 23, "playoff": true, "score": "3-9"}, {"season": 2024, "week": 9, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 14, "playoff": false, "score": "4-8"}]}, "煥然": {"w": 0, "l": 5, "t": 0, "cw": 14, "cl": 46, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 19, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 13, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 18, "playoff": false, "score": "2-10"}]}, "魯夫顥": {"w": 1, "l": 4, "t": 1, "cw": 29, "cl": 43, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 22, "playoff": true, "score": "4-8"}, {"season": 2024, "week": 4, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 17, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 13, "playoff": false, "score": "3-9"}]}}, "Steven PI": {"ANDY": {"w": 1, "l": 3, "t": 0, "cw": 18, "cl": 29, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 11, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 7, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 20, "playoff": false, "score": "4-7"}]}, "Allen": {"w": 2, "l": 3, "t": 0, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 4, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 17, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 15, "playoff": false, "score": "8-4"}]}, "HowardCommissioner": {"w": 1, "l": 4, "t": 1, "cw": 26, "cl": 45, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "3-8"}, {"season": 2024, "week": 1, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 14, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 23, "playoff": true, "score": "4-8"}, {"season": 2025, "week": 3, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 16, "playoff": false, "score": "1-11"}]}, "Kevin": {"w": 4, "l": 0, "t": 1, "cw": 38, "cl": 22, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 17, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 18, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 10, "playoff": false, "score": "10-2"}]}, "LeslieL": {"w": 4, "l": 1, "t": 0, "cw": 31, "cl": 27, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "6-5"}, {"season": 2023, "week": 15, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 15, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 13, "playoff": false, "score": "7-5"}]}, "OBEAR": {"w": 3, "l": 1, "t": 1, "cw": 41, "cl": 18, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "10-2"}, {"season": 2023, "week": 18, "playoff": false, "score": "11-1"}, {"season": 2024, "week": 13, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 4, "playoff": false, "score": "4-7"}, {"season": 2025, "week": 17, "playoff": false, "score": "6-6"}]}, "PoKai": {"w": 3, "l": 3, "t": 0, "cw": 32, "cl": 39, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "2-10"}, {"season": 2023, "week": 19, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 22, "playoff": true, "score": "7-5"}, {"season": 2025, "week": 5, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 18, "playoff": false, "score": "9-2"}]}, "Scott": {"w": 0, "l": 5, "t": 0, "cw": 17, "cl": 43, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 14, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 3, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 16, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 11, "playoff": false, "score": "4-8"}]}, "大仙": {"w": 4, "l": 0, "t": 0, "cw": 33, "cl": 15, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 20, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 9, "playoff": false, "score": "7-5"}]}, "大餅": {"w": 1, "l": 3, "t": 1, "cw": 24, "cl": 35, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 21, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 10, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 1, "playoff": false, "score": "9-2"}, {"season": 2025, "week": 14, "playoff": false, "score": "6-6"}]}, "新一": {"w": 1, "l": 3, "t": 0, "cw": 18, "cl": 29, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 12, "playoff": false, "score": "4-7"}, {"season": 2025, "week": 6, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 19, "playoff": false, "score": "9-3"}]}, "煥然": {"w": 3, "l": 4, "t": 0, "cw": 38, "cl": 46, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 16, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 6, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 19, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 21, "playoff": true, "score": "7-5"}, {"season": 2025, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 21, "playoff": false, "score": "7-5"}]}, "魯夫顥": {"w": 2, "l": 2, "t": 0, "cw": 22, "cl": 25, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 7, "playoff": false, "score": "6-5"}, {"season": 2024, "week": 20, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 12, "playoff": false, "score": "2-10"}]}}, "大仙": {"ANDY": {"w": 0, "l": 5, "t": 1, "cw": 19, "cl": 53, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 18, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 13, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 5, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 18, "playoff": false, "score": "1-11"}, {"season": 2025, "week": 23, "playoff": true, "score": "1-11"}]}, "Allen": {"w": 2, "l": 3, "t": 0, "cw": 31, "cl": 29, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 21, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 6, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 19, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 13, "playoff": false, "score": "11-1"}]}, "HowardCommissioner": {"w": 2, "l": 3, "t": 0, "cw": 23, "cl": 35, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 3, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 16, "playoff": false, "score": "1-10"}, {"season": 2025, "week": 1, "playoff": false, "score": "8-3"}, {"season": 2025, "week": 14, "playoff": false, "score": "4-8"}]}, "Kevin": {"w": 2, "l": 3, "t": 0, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 20, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 8, "playoff": false, "score": "11-1"}, {"season": 2025, "week": 21, "playoff": false, "score": "10-2"}]}, "LeslieL": {"w": 2, "l": 2, "t": 0, "cw": 26, "cl": 22, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 4, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 17, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 11, "playoff": false, "score": "9-3"}]}, "OBEAR": {"w": 2, "l": 4, "t": 0, "cw": 31, "cl": 41, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 14, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 15, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 2, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 15, "playoff": false, "score": "2-10"}]}, "PoKai": {"w": 2, "l": 4, "t": 0, "cw": 27, "cl": 44, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 15, "playoff": false, "score": "9-2"}, {"season": 2024, "week": 11, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 3, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 16, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 22, "playoff": true, "score": "2-10"}]}, "Scott": {"w": 0, "l": 3, "t": 2, "cw": 21, "cl": 37, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "2-8"}, {"season": 2024, "week": 5, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 18, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 7, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 20, "playoff": false, "score": "6-6"}]}, "Steven PI": {"w": 0, "l": 4, "t": 0, "cw": 15, "cl": 33, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 20, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 9, "playoff": false, "score": "5-7"}]}, "大餅": {"w": 3, "l": 2, "t": 0, "cw": 26, "cl": 33, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 17, "playoff": false, "score": "2-10"}, {"season": 2024, "week": 12, "playoff": false, "score": "1-11"}, {"season": 2025, "week": 12, "playoff": false, "score": "8-3"}, {"season": 2025, "week": 24, "playoff": true, "score": "8-4"}]}, "新一": {"w": 1, "l": 2, "t": 3, "cw": 35, "cl": 37, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 4, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 17, "playoff": false, "score": "6-6"}]}, "煥然": {"w": 1, "l": 3, "t": 0, "cw": 17, "cl": 31, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 10, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 6, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 19, "playoff": false, "score": "3-9"}]}, "魯夫顥": {"w": 0, "l": 4, "t": 0, "cw": 14, "cl": 33, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 16, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 9, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 10, "playoff": false, "score": "5-7"}]}}, "大餅": {"ANDY": {"w": 4, "l": 1, "t": 1, "cw": 45, "cl": 25, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 19, "playoff": false, "score": "9-2"}, {"season": 2023, "week": 24, "playoff": true, "score": "10-2"}, {"season": 2024, "week": 2, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 15, "playoff": false, "score": "8-3"}, {"season": 2025, "week": 10, "playoff": false, "score": "6-6"}]}, "Allen": {"w": 3, "l": 1, "t": 1, "cw": 39, "cl": 21, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 22, "playoff": true, "score": "9-3"}, {"season": 2024, "week": 8, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 18, "playoff": false, "score": "10-2"}]}, "HowardCommissioner": {"w": 1, "l": 2, "t": 2, "cw": 23, "cl": 36, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 5, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 18, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 6, "playoff": false, "score": "2-9"}, {"season": 2025, "week": 19, "playoff": false, "score": "6-6"}]}, "Kevin": {"w": 2, "l": 3, "t": 0, "cw": 34, "cl": 25, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "5-6"}, {"season": 2023, "week": 14, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 9, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 21, "playoff": true, "score": "5-7"}, {"season": 2025, "week": 13, "playoff": false, "score": "4-8"}]}, "LeslieL": {"w": 3, "l": 0, "t": 3, "cw": 43, "cl": 29, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 23, "playoff": true, "score": "9-3"}, {"season": 2024, "week": 6, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 3, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 16, "playoff": false, "score": "6-6"}]}, "OBEAR": {"w": 4, "l": 1, "t": 2, "cw": 50, "cl": 33, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 15, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 4, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 20, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 23, "playoff": true, "score": "5-6"}]}, "PoKai": {"w": 5, "l": 0, "t": 0, "cw": 39, "cl": 19, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "8-3"}, {"season": 2023, "week": 16, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 13, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 8, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 21, "playoff": false, "score": "9-3"}]}, "Scott": {"w": 3, "l": 0, "t": 2, "cw": 38, "cl": 22, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 7, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 17, "playoff": false, "score": "8-4"}]}, "Steven PI": {"w": 3, "l": 1, "t": 1, "cw": 35, "cl": 24, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 21, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 10, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 1, "playoff": false, "score": "2-9"}, {"season": 2025, "week": 14, "playoff": false, "score": "6-6"}]}, "大仙": {"w": 2, "l": 3, "t": 0, "cw": 33, "cl": 26, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 17, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 12, "playoff": false, "score": "11-1"}, {"season": 2025, "week": 12, "playoff": false, "score": "3-8"}, {"season": 2025, "week": 24, "playoff": true, "score": "4-8"}]}, "新一": {"w": 4, "l": 1, "t": 0, "cw": 37, "cl": 21, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 20, "playoff": false, "score": "8-3"}, {"season": 2024, "week": 3, "playoff": false, "score": "9-2"}, {"season": 2024, "week": 16, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 9, "playoff": false, "score": "5-7"}]}, "煥然": {"w": 3, "l": 2, "t": 1, "cw": 38, "cl": 34, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 23, "playoff": true, "score": "10-2"}, {"season": 2025, "week": 11, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 22, "playoff": true, "score": "4-8"}]}, "魯夫顥": {"w": 3, "l": 2, "t": 1, "cw": 40, "cl": 31, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 18, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 22, "playoff": true, "score": "8-4"}, {"season": 2025, "week": 2, "playoff": false, "score": "7-4"}, {"season": 2025, "week": 15, "playoff": false, "score": "5-7"}]}}, "新一": {"ANDY": {"w": 0, "l": 6, "t": 1, "cw": 30, "cl": 54, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 21, "playoff": false, "score": "2-10"}, {"season": 2023, "week": 22, "playoff": true, "score": "5-7"}, {"season": 2024, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 17, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 2, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 15, "playoff": false, "score": "4-8"}]}, "Allen": {"w": 2, "l": 1, "t": 0, "cw": 20, "cl": 15, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 10, "playoff": false, "score": "7-4"}, {"season": 2025, "week": 10, "playoff": false, "score": "10-2"}]}, "HowardCommissioner": {"w": 3, "l": 0, "t": 1, "cw": 27, "cl": 20, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 7, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 20, "playoff": false, "score": "6-5"}, {"season": 2025, "week": 11, "playoff": false, "score": "7-5"}]}, "Kevin": {"w": 4, "l": 0, "t": 1, "cw": 40, "cl": 20, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 16, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 18, "playoff": false, "score": "9-3"}]}, "LeslieL": {"w": 4, "l": 1, "t": 0, "cw": 33, "cl": 26, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 14, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 8, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 21, "playoff": false, "score": "2-10"}]}, "OBEAR": {"w": 4, "l": 1, "t": 0, "cw": 33, "cl": 27, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 17, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 6, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 19, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 12, "playoff": false, "score": "1-11"}]}, "PoKai": {"w": 2, "l": 4, "t": 0, "cw": 32, "cl": 39, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "10-2"}, {"season": 2023, "week": 18, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 2, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 15, "playoff": false, "score": "4-7"}, {"season": 2024, "week": 21, "playoff": true, "score": "3-9"}, {"season": 2025, "week": 13, "playoff": false, "score": "3-9"}]}, "Scott": {"w": 5, "l": 0, "t": 0, "cw": 41, "cl": 19, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 23, "playoff": true, "score": "9-3"}, {"season": 2024, "week": 9, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 14, "playoff": false, "score": "8-4"}]}, "Steven PI": {"w": 3, "l": 1, "t": 0, "cw": 29, "cl": 18, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 12, "playoff": false, "score": "7-4"}, {"season": 2025, "week": 6, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 19, "playoff": false, "score": "3-9"}]}, "大仙": {"w": 2, "l": 1, "t": 3, "cw": 37, "cl": 35, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 4, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 17, "playoff": false, "score": "6-6"}]}, "大餅": {"w": 1, "l": 4, "t": 0, "cw": 21, "cl": 37, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 20, "playoff": false, "score": "3-8"}, {"season": 2024, "week": 3, "playoff": false, "score": "2-9"}, {"season": 2024, "week": 16, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 9, "playoff": false, "score": "7-5"}]}, "煥然": {"w": 2, "l": 6, "t": 0, "cw": 36, "cl": 59, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "1-10"}, {"season": 2023, "week": 15, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 24, "playoff": true, "score": "5-7"}, {"season": 2024, "week": 5, "playoff": false, "score": "4-8"}, {"season": 2024, "week": 18, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 22, "playoff": true, "score": "5-7"}, {"season": 2025, "week": 3, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 16, "playoff": false, "score": "4-8"}]}, "魯夫顥": {"w": 4, "l": 1, "t": 0, "cw": 36, "cl": 23, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 13, "playoff": false, "score": "8-3"}, {"season": 2024, "week": 23, "playoff": true, "score": "9-3"}, {"season": 2025, "week": 7, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 20, "playoff": false, "score": "5-7"}]}}, "煥然": {"ANDY": {"w": 3, "l": 3, "t": 0, "cw": 36, "cl": 35, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "4-7"}, {"season": 2023, "week": 14, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 3, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 16, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 4, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 17, "playoff": false, "score": "3-9"}]}, "Allen": {"w": 6, "l": 0, "t": 0, "cw": 47, "cl": 25, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 17, "playoff": false, "score": "7-5"}, {"season": 2023, "week": 23, "playoff": true, "score": "7-5"}, {"season": 2024, "week": 2, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 15, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 12, "playoff": false, "score": "8-4"}]}, "HowardCommissioner": {"w": 4, "l": 1, "t": 0, "cw": 35, "cl": 25, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 18, "playoff": false, "score": "3-9"}, {"season": 2024, "week": 9, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 13, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 24, "playoff": true, "score": "7-5"}]}, "Kevin": {"w": 3, "l": 1, "t": 1, "cw": 35, "cl": 24, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 4, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 17, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 20, "playoff": false, "score": "8-4"}]}, "LeslieL": {"w": 1, "l": 1, "t": 3, "cw": 31, "cl": 29, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 22, "playoff": true, "score": "6-6"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 10, "playoff": false, "score": "9-3"}]}, "OBEAR": {"w": 2, "l": 1, "t": 2, "cw": 35, "cl": 25, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 7, "playoff": false, "score": "9-3"}, {"season": 2024, "week": 20, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 1, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 14, "playoff": false, "score": "6-6"}]}, "PoKai": {"w": 3, "l": 1, "t": 0, "cw": 30, "cl": 16, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 12, "playoff": false, "score": "10-1"}, {"season": 2025, "week": 2, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 15, "playoff": false, "score": "8-4"}]}, "Scott": {"w": 5, "l": 0, "t": 0, "cw": 46, "cl": 14, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 19, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 13, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 5, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 18, "playoff": false, "score": "10-2"}]}, "Steven PI": {"w": 4, "l": 3, "t": 0, "cw": 46, "cl": 38, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 16, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 6, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 19, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 21, "playoff": true, "score": "5-7"}, {"season": 2025, "week": 8, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 21, "playoff": false, "score": "5-7"}]}, "大仙": {"w": 3, "l": 1, "t": 0, "cw": 31, "cl": 17, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 10, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 6, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 19, "playoff": false, "score": "9-3"}]}, "大餅": {"w": 2, "l": 3, "t": 1, "cw": 34, "cl": 38, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 14, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 23, "playoff": true, "score": "2-10"}, {"season": 2025, "week": 11, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 22, "playoff": true, "score": "8-4"}]}, "新一": {"w": 6, "l": 2, "t": 0, "cw": 59, "cl": 36, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "10-1"}, {"season": 2023, "week": 15, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 24, "playoff": true, "score": "7-5"}, {"season": 2024, "week": 5, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 18, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 22, "playoff": true, "score": "7-5"}, {"season": 2025, "week": 3, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 16, "playoff": false, "score": "8-4"}]}, "魯夫顥": {"w": 2, "l": 2, "t": 1, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 21, "playoff": false, "score": "1-11"}, {"season": 2024, "week": 8, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 9, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 23, "playoff": true, "score": "5-7"}]}}, "魯夫顥": {"ANDY": {"w": 3, "l": 3, "t": 0, "cw": 36, "cl": 35, "games": [{"season": 2023, "week": 7, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 20, "playoff": false, "score": "2-9"}, {"season": 2023, "week": 23, "playoff": true, "score": "5-7"}, {"season": 2024, "week": 12, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 8, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 21, "playoff": false, "score": "9-3"}]}, "Allen": {"w": 3, "l": 0, "t": 2, "cw": 37, "cl": 23, "games": [{"season": 2023, "week": 13, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 5, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 18, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 3, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 16, "playoff": false, "score": "8-4"}]}, "HowardCommissioner": {"w": 3, "l": 4, "t": 0, "cw": 36, "cl": 47, "games": [{"season": 2023, "week": 2, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 15, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 2, "playoff": false, "score": "1-11"}, {"season": 2024, "week": 15, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 21, "playoff": true, "score": "4-8"}, {"season": 2025, "week": 4, "playoff": false, "score": "5-6"}, {"season": 2025, "week": 17, "playoff": false, "score": "7-5"}]}, "Kevin": {"w": 3, "l": 1, "t": 0, "cw": 30, "cl": 18, "games": [{"season": 2023, "week": 10, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 6, "playoff": false, "score": "1-11"}, {"season": 2024, "week": 19, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 11, "playoff": false, "score": "11-1"}]}, "LeslieL": {"w": 5, "l": 2, "t": 0, "cw": 47, "cl": 37, "games": [{"season": 2023, "week": 6, "playoff": false, "score": "2-10"}, {"season": 2023, "week": 19, "playoff": false, "score": "8-4"}, {"season": 2023, "week": 24, "playoff": true, "score": "5-7"}, {"season": 2024, "week": 3, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 16, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 1, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 14, "playoff": false, "score": "9-3"}]}, "OBEAR": {"w": 5, "l": 1, "t": 0, "cw": 45, "cl": 27, "games": [{"season": 2023, "week": 12, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 1, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 14, "playoff": false, "score": "9-3"}, {"season": 2025, "week": 5, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 18, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 22, "playoff": true, "score": "7-5"}]}, "PoKai": {"w": 2, "l": 3, "t": 1, "cw": 38, "cl": 33, "games": [{"season": 2023, "week": 1, "playoff": false, "score": "5-7"}, {"season": 2023, "week": 14, "playoff": false, "score": "10-2"}, {"season": 2024, "week": 10, "playoff": false, "score": "7-5"}, {"season": 2025, "week": 6, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 19, "playoff": false, "score": "6-6"}, {"season": 2025, "week": 24, "playoff": true, "score": "5-6"}]}, "Scott": {"w": 4, "l": 1, "t": 1, "cw": 43, "cl": 29, "games": [{"season": 2023, "week": 4, "playoff": false, "score": "4-8"}, {"season": 2023, "week": 17, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 22, "playoff": true, "score": "8-4"}, {"season": 2024, "week": 4, "playoff": false, "score": "8-4"}, {"season": 2024, "week": 17, "playoff": false, "score": "8-4"}, {"season": 2025, "week": 13, "playoff": false, "score": "9-3"}]}, "Steven PI": {"w": 2, "l": 2, "t": 0, "cw": 25, "cl": 22, "games": [{"season": 2023, "week": 11, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 7, "playoff": false, "score": "5-6"}, {"season": 2024, "week": 20, "playoff": false, "score": "3-9"}, {"season": 2025, "week": 12, "playoff": false, "score": "10-2"}]}, "大仙": {"w": 4, "l": 0, "t": 0, "cw": 33, "cl": 14, "games": [{"season": 2023, "week": 3, "playoff": false, "score": "9-3"}, {"season": 2023, "week": 16, "playoff": false, "score": "7-4"}, {"season": 2024, "week": 9, "playoff": false, "score": "10-2"}, {"season": 2025, "week": 10, "playoff": false, "score": "7-5"}]}, "大餅": {"w": 2, "l": 3, "t": 1, "cw": 31, "cl": 40, "games": [{"season": 2023, "week": 5, "playoff": false, "score": "3-9"}, {"season": 2023, "week": 18, "playoff": false, "score": "7-5"}, {"season": 2024, "week": 11, "playoff": false, "score": "6-6"}, {"season": 2024, "week": 22, "playoff": true, "score": "4-8"}, {"season": 2025, "week": 2, "playoff": false, "score": "4-7"}, {"season": 2025, "week": 15, "playoff": false, "score": "7-5"}]}, "新一": {"w": 1, "l": 4, "t": 0, "cw": 23, "cl": 36, "games": [{"season": 2023, "week": 9, "playoff": false, "score": "5-7"}, {"season": 2024, "week": 13, "playoff": false, "score": "3-8"}, {"season": 2024, "week": 23, "playoff": true, "score": "3-9"}, {"season": 2025, "week": 7, "playoff": false, "score": "5-7"}, {"season": 2025, "week": 20, "playoff": false, "score": "7-5"}]}, "煥然": {"w": 2, "l": 2, "t": 1, "cw": 30, "cl": 30, "games": [{"season": 2023, "week": 8, "playoff": false, "score": "6-6"}, {"season": 2023, "week": 21, "playoff": false, "score": "11-1"}, {"season": 2024, "week": 8, "playoff": false, "score": "2-10"}, {"season": 2025, "week": 9, "playoff": false, "score": "4-8"}, {"season": 2025, "week": 23, "playoff": true, "score": "7-5"}]}}}, "streaks": [{"y": 2023, "mgr": "PoKai", "team": "PoKai's Pleasant Team", "kind": "L", "len": 14, "from": 8, "to": 21}, {"y": 2024, "mgr": "大餅", "team": "大餅你好！", "kind": "W", "len": 10, "from": 1, "to": 10}, {"y": 2023, "mgr": "Steven PI", "team": "齁齁做歹誌", "kind": "L", "len": 9, "from": 8, "to": 16}, {"y": 2025, "mgr": "魯夫顥", "team": "149-101-2", "kind": "W", "len": 9, "from": 10, "to": 18}, {"y": 2023, "mgr": "Kevin", "team": "信ㄌㄨㄚˋTaiwan", "kind": "L", "len": 8, "from": 14, "to": 21}, {"y": 2025, "mgr": "ANDY", "team": "安迪幫幫忙", "kind": "W", "len": 8, "from": 2, "to": 9}, {"y": 2025, "mgr": "Kevin", "team": "信ㄌㄨㄚˋTaiwan", "kind": "L", "len": 8, "from": 14, "to": 21}, {"y": 2023, "mgr": "新一", "team": "What time is it", "kind": "W", "len": 7, "from": 12, "to": 18}, {"y": 2023, "mgr": "OBEAR", "team": "OBEAR", "kind": "L", "len": 7, "from": 14, "to": 20}, {"y": 2023, "mgr": "魯夫顥", "team": "我大魯阿肥賈奈特夫顥戰隊H2H", "kind": "W", "len": 7, "from": 10, "to": 16}, {"y": 2025, "mgr": "PoKai", "team": "155 - 95 - 2", "kind": "W", "len": 7, "from": 1, "to": 7}, {"y": 2025, "mgr": "新一", "team": "咕嚕咕嚕", "kind": "W", "len": 7, "from": 5, "to": 11}], "catrecs": [{"cat": "FGM", "val": 339.0, "y": 2024, "w": 18, "mgr": "魯夫顥", "team": "被ROSÉ暴擊了"}, {"cat": "FG%", "val": 0.578, "y": 2024, "w": 14, "mgr": "Scott", "team": "相信顥董 年底就懂"}, {"cat": "FT%", "val": 0.935, "y": 2024, "w": 15, "mgr": "LeslieL", "team": "LeslieL's Glorious Team"}, {"cat": "3PTM", "val": 109.0, "y": 2024, "w": 3, "mgr": "HowardCommissioner", "team": "霍華德"}, {"cat": "PTS", "val": 939.0, "y": 2024, "w": 18, "mgr": "魯夫顥", "team": "被ROSÉ暴擊了"}, {"cat": "OREB", "val": 102.0, "y": 2024, "w": 9, "mgr": "PoKai", "team": "2486"}, {"cat": "REB", "val": 373.0, "y": 2024, "w": 6, "mgr": "PoKai", "team": "2486"}, {"cat": "AST", "val": 244.0, "y": 2025, "w": 22, "mgr": "煥然", "team": "正然君子丸"}, {"cat": "ST", "val": 68.0, "y": 2025, "w": 18, "mgr": "魯夫顥", "team": "149-101-2"}, {"cat": "BLK", "val": 57.0, "y": 2023, "w": 2, "mgr": "Allen", "team": "👼 Allen"}, {"cat": "TO", "val": 20.0, "y": 2023, "w": 7, "mgr": "大仙", "team": "哈孝遠刺配滄洲道簡嘉宏大鬧野豬林"}, {"cat": "A/T", "val": 3.41, "y": 2023, "w": 9, "mgr": "LeslieL", "team": "LeslieL's Glorious Team"}], "blowouts": [{"y": 2024, "w": 12, "po": false, "a": "Kevin", "b": "OBEAR", "sa": 12, "sb": 0, "days": 7}, {"y": 2023, "w": 1, "po": false, "a": "HowardCommissioner", "b": "Allen", "sa": 0, "sb": 11, "days": 6}, {"y": 2023, "w": 7, "po": false, "a": "PoKai", "b": "Allen", "sa": 11, "sb": 1, "days": 7}, {"y": 2023, "w": 15, "po": false, "a": "Scott", "b": "Allen", "sa": 11, "sb": 1, "days": 7}, {"y": 2023, "w": 18, "po": false, "a": "Steven PI", "b": "OBEAR", "sa": 11, "sb": 1, "days": 7}, {"y": 2023, "w": 21, "po": false, "a": "煥然", "b": "魯夫顥", "sa": 1, "sb": 11, "days": 7}, {"y": 2023, "w": 21, "po": false, "a": "LeslieL", "b": "Kevin", "sa": 11, "sb": 1, "days": 7}, {"y": 2024, "w": 2, "po": false, "a": "HowardCommissioner", "b": "魯夫顥", "sa": 11, "sb": 1, "days": 7}], "longweeks": ["2023W17:14", "2024W16:14", "2024W7:14", "2025W17:14"]};
+const YEARS = Object.keys(D.seasons).map(Number).sort();
+const DISP = m => m === "HowardCommissioner" ? "Howard" : m;
+const CATNAME = { "FGM": "投籃命中", "FG%": "命中率", "FT%": "罰球命中率", "3PTM": "三分球", "PTS": "得分", "OREB": "進攻籃板", "REB": "籃板", "AST": "助攻", "ST": "抄截", "BLK": "阻攻", "TO": "失誤（最少）", "A/T": "助失比" };
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tname = s => s ? `<span class="tname">${esc(s)}</span>` : `<span class="tname blank">（空白隊名）</span>`;
+const season = y => `${y}–${String(y + 1).slice(2)}`;
+const rec = r => `${r[0]}-${r[1]}-${r[2]}`;
+const pct = (w, l, t) => (w + t / 2) / Math.max(w + l + t, 1);
+const fmt = (c, v) => c.includes("%") ? v.toFixed(3).replace(/^0/, "") : c === "A/T" ? v.toFixed(2) : String(Math.round(v));
+const sgn = n => n > 0 ? "+" + n : String(n);
+
+let nGames = 0;
+for (const a in D.h2h) for (const b in D.h2h[a]) nGames += D.h2h[a][b].w + D.h2h[a][b].l + D.h2h[a][b].t;
+document.getElementById("n-games").textContent = nGames / 2;
+
+// 每位經理的逐場紀錄（從 h2h 攤平），走勢圖用
+const MGRS = Object.keys(D.h2h);
+const G = Object.fromEntries(MGRS.map(m => [m, []]));
+for (const a of MGRS) for (const b in D.h2h[a]) for (const g of D.h2h[a][b].games) {
+  const [sa, sb] = g.score.split("-").map(Number);
+  G[a].push({ y: g.season, w: g.week, po: g.playoff, o: b, sa, sb });
+}
+for (const m of MGRS) G[m].sort((p, q) => p.y - q.y || p.w - q.w);
+
+// 冠軍旗
+const ban = document.getElementById("banners"), pod = document.getElementById("podium");
+for (const y of YEARS) {
+  const s = D.seasons[y], champ = s.table.find(r => r.mgr === s.podium[0]);
+  ban.append(el("div", "flag", `<span class="yr">${y}</span><span class="who">${esc(DISP(champ.mgr))}</span><span class="tm">${champ.team ? esc(champ.team) : "（空白隊名）"}</span><span class="fr">${rec(champ.cat)}</span>`));
+  const wr = weeklyRanks(y), top = MGRS.find(m => wr.ranks[m][wr.nW - 1] === 1), last = s.table.find(r => r.rank === s.table.length).mgr;
+  pod.append(el("div", "", `亞軍 <b>${esc(DISP(s.podium[1]))}</b><br>季軍 <b>${esc(DISP(s.podium[2]))}</b><span class="more">例行賽第一 <b>${esc(DISP(top))}</b><br>墊底 <b>${esc(DISP(last))}</b></span>`));
+}
+
+// 三季總表
+const tot = Object.fromEntries(MGRS.map(m => {
+  let w = 0, l = 0, t = 0; for (const o in D.h2h[m]) { w += D.h2h[m][o].w; l += D.h2h[m][o].l; t += D.h2h[m][o].t; }
+  const cat = [0, 0, 0]; const fins = {};
+  for (const y of YEARS) { const r = D.seasons[y].table.find(r => r.mgr === m); r.cat.forEach((v, i) => cat[i] += v); fins[y] = r.rank; }
+  const avg = YEARS.reduce((a, y) => a + fins[y], 0) / YEARS.length, lasts = YEARS.filter(y => fins[y] === D.seasons[y].table.length).length;
+  return [m, { w, l, t, cat, fins, avg, lasts, pct: pct(w, l, t), titles: YEARS.filter(y => D.seasons[y].podium[0] === m).length }];
+}));
+const order = [...MGRS].sort((a, b) => pct(tot[b].w, tot[b].l, tot[b].t) - pct(tot[a].w, tot[a].l, tot[a].t));
+const at = document.getElementById("alltime-table");
+// 欄位：[標題, 排序值（大的在前；null 表示不能排）, 欄 class]
+const ATCOLS = [["經理", null, ""], ["冠軍", m => tot[m].titles, "r"], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
+  ["類別", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
+let atSort = 3;
+function drawAlltime() {
+  const key = ATCOLS[atSort][1];
+  const rows = [...MGRS].sort((a, b) => key(b) - key(a) || tot[b].pct - tot[a].pct);
+  at.innerHTML = "";
+  const hr = el("tr");
+  ATCOLS.forEach(([label, k, cls], i) => {
+    const th = el("th", cls);
+    if (k) {
+      const b = el("button", "", label); b.type = "button"; b.onclick = () => { atSort = i; drawAlltime(); };
+      th.append(b); if (i === atSort) th.setAttribute("aria-sort", "descending");
+    } else th.textContent = label;
+    hr.append(th);
+  });
+  at.append(el("thead")); at.tHead.append(hr);
+  const atb = el("tbody");
+  for (const m of rows) {
+    const t = tot[m];
+    const fins = YEARS.map(y => { const i = D.seasons[y].podium.indexOf(m); return `<span class="fin ${i >= 0 ? "f" + (i + 1) : ""}" title="${season(y)}">${t.fins[y]}</span>`; }).join("");
+    atb.append(el("tr", "", `<td><b>${esc(DISP(m))}</b></td><td class="r num">${t.titles || "–"}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td class="r num hide-sm">${t.lasts || "–"}</td><td><div class="fins">${fins}</div></td>`));
+  }
+  at.append(atb);
+}
+drawAlltime();
+
+// 走勢圖共用
+const SVG = "http://www.w3.org/2000/svg";
+const sv = (tag, attrs, parent) => { const e = document.createElementNS(SVG, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+const svText = (str, attrs, parent) => { const e = sv("text", attrs, parent); e.textContent = str; return e; };
+const pathD = pts => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join("");
+function chartShell(box, H) {
+  box.innerHTML = "";
+  const W = Math.max(box.clientWidth, 300);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img" }, box);
+  const tip = el("div", "tip"); tip.hidden = true; box.append(tip);
+  return { W, svg, tip };
+}
+function placeTip(box, tip, x, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const bw = box.clientWidth, tw = tip.offsetWidth;
+  tip.style.left = Math.min(Math.max(x + 12 + tw > bw ? x - 12 - tw : x + 12, 0), bw - tw) + "px";
+}
+// 線：灰色背景線先畫，選中的經理最後畫在最上層；整條線可點來切換經理
+function drawLines(g, series, cur) {
+  for (const [m, pts] of series) if (m !== cur) {
+    sv("path", { class: "ln", d: pathD(pts) }, g);
+  }
+  const mine = series.find(([m]) => m === cur);
+  if (mine) { sv("path", { class: "ring", d: pathD(mine[1]) }, g); sv("path", { class: "ln on", d: pathD(mine[1]) }, g); }
+  for (const [m, pts] of series) {
+    const h = sv("path", { class: "hit", d: pathD(pts) }, g);
+    h.append(Object.assign(document.createElementNS(SVG, "title"), { textContent: DISP(m) }));
+    h.addEventListener("click", () => showMgr(m));
+  }
+}
+
+let cur = null, curY = null;
+
+// 例行賽排名走勢：每週依累計類別勝率排名（同率比勝場）
+function weeklyRanks(y) {
+  const reg = m => G[m].filter(g => g.y === y && !g.po);
+  const nW = Math.max(...MGRS.map(m => reg(m).length));
+  const cum = Object.fromEntries(MGRS.map(m => [m, [0, 0, 0]]));
+  const ranks = Object.fromEntries(MGRS.map(m => [m, []])), recs = Object.fromEntries(MGRS.map(m => [m, []]));
+  for (let i = 0; i < nW; i++) {
+    for (const m of MGRS) { const g = reg(m)[i]; if (g) { cum[m][0] += g.sa; cum[m][1] += g.sb; cum[m][2] += 12 - g.sa - g.sb; } }
+    const srt = [...MGRS].sort((a, b) => pct(...cum[b]) - pct(...cum[a]) || cum[b][0] - cum[a][0]);
+    srt.forEach((m, r) => { ranks[m].push(r + 1); recs[m].push([...cum[m]]); });
+  }
+  return { nW, ranks, recs, reg };
+}
+function drawBump() {
+  const box = document.getElementById("bump"), y = curY;
+  const { nW, ranks, recs, reg } = weeklyRanks(y);
+  const N = MGRS.length, rowH = 22, padT = 10, padB = 30, padL = 4, padR = 96;
+  const H = padT + (N - 1) * rowH + padB;
+  const { W, svg, tip } = chartShell(box, H);
+  svg.setAttribute("aria-label", `${season(y)} 例行賽每週排名`);
+  const X = i => padL + i * (W - padL - padR) / (nW - 1), Y = r => padT + (r - 1) * rowH;
+  const g = sv("g", {}, svg);
+  sv("line", { class: "cut", x1: padL, x2: W - padR, y1: Y(8.5), y2: Y(8.5) }, g);
+  [...new Set([0, 4, 9, 14, 19].filter(i => i < nW - 3).concat(nW - 1))].forEach(i =>
+    svText(`W${i + 1}`, { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : "middle" }, g));
+  const series = MGRS.map(m => [m, ranks[m].map((r, i) => [X(i), Y(r)])]);
+  drawLines(g, series, cur);
+  for (const m of MGRS) {
+    const r = ranks[m][nW - 1];
+    const t = svText(`${r}  ${DISP(m)}`, { x: W - padR + 10, y: Y(r) + 4.5, class: "lab" + (m === cur ? " on" : "") }, g);
+    t.addEventListener("click", () => showMgr(m));
+  }
+  const xh = sv("line", { class: "xh", y1: padT - 6, y2: Y(N) + 6, visibility: "hidden" }, svg);
+  const dot = sv("circle", { class: "dot", r: 4.5, visibility: "hidden" }, svg);
+  const move = ev => {
+    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
+    if (px > W - padR + 4) return leave();
+    const i = Math.max(0, Math.min(nW - 1, Math.round((px - padL) / ((W - padL - padR) / (nW - 1)))));
+    xh.setAttribute("x1", X(i)); xh.setAttribute("x2", X(i)); xh.setAttribute("visibility", "visible");
+    const r = ranks[cur][i], c = recs[cur][i], gm = reg(cur)[i];
+    dot.setAttribute("cx", X(i)); dot.setAttribute("cy", Y(r)); dot.setAttribute("visibility", "visible");
+    const res = gm ? `vs ${esc(DISP(gm.o))} <span class="${gm.sa > gm.sb ? "w" : gm.sa < gm.sb ? "l" : ""}">${gm.sa}-${gm.sb}</span>` : "";
+    placeTip(box, tip, X(i) * bx.width / W, `<b>第 ${i + 1} 週　${esc(DISP(cur))} 第 ${r} 名</b><br>累計 ${rec(c)}　${res}`);
+  };
+  const leave = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
+}
+
+// 生涯對戰淨勝場：三季所有對戰（含季後賽）的累計勝場減敗場
+const OFF = {}; { let o = 0; for (const y of YEARS) { OFF[y] = o; o += Math.max(...MGRS.flatMap(m => G[m].filter(g => g.y === y).map(g => g.w))) + 1; } }
+const SPAN = OFF[YEARS[YEARS.length - 1]] + Math.max(...MGRS.flatMap(m => G[m].filter(g => g.y === YEARS[YEARS.length - 1]).map(g => g.w)));
+const NET = Object.fromEntries(MGRS.map(m => { let n = 0; return [m, G[m].map(g => ({ ...g, x: OFF[g.y] + g.w, n: n += Math.sign(g.sa - g.sb) }))]; }));
+function drawCareer() {
+  const box = document.getElementById("career");
+  const padT = 26, padB = 8, padL = 30, padR = 40, H = 260;
+  const { W, svg, tip } = chartShell(box, H);
+  svg.setAttribute("aria-label", `${DISP(cur)} 三季累計對戰淨勝場`);
+  const all = MGRS.flatMap(m => NET[m].map(p => p.n));
+  const lo = Math.floor(Math.min(0, ...all) / 10) * 10, hi = Math.ceil(Math.max(0, ...all) / 10) * 10;
+  const X = x => padL + x * (W - padL - padR) / SPAN, Y = v => padT + (hi - v) * (H - padT - padB) / (hi - lo);
+  const g = sv("g", {}, svg);
+  for (let v = lo; v <= hi; v += 10) {
+    sv("line", { class: v === 0 ? "zero" : "grid", x1: padL, x2: W - padR, y1: Y(v), y2: Y(v) }, g);
+    svText(sgn(v), { x: padL - 6, y: Y(v) + 4.5, "text-anchor": "end" }, g);
+  }
+  for (const y of YEARS) {
+    if (OFF[y]) sv("line", { class: "grid", x1: X(OFF[y]), x2: X(OFF[y]), y1: padT - 4, y2: H - padB }, g);
+    svText(season(y), { x: X(OFF[y]) + 6, y: 14 }, g);
+  }
+  drawLines(g, MGRS.map(m => [m, [[X(0), Y(0)], ...NET[m].map(p => [X(p.x), Y(p.n)])]]), cur);
+  const pts = NET[cur], last = pts[pts.length - 1];
+  sv("circle", { class: "dot", cx: X(last.x), cy: Y(last.n), r: 4.5 }, g);
+  svText(sgn(last.n), { x: X(last.x) + 8, y: Y(last.n) + 4.5, class: "on" }, g);
+  const xh = sv("line", { class: "xh", y1: padT - 4, y2: H - padB, visibility: "hidden" }, svg);
+  const dot = sv("circle", { class: "dot", r: 4.5, visibility: "hidden" }, svg);
+  const move = ev => {
+    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
+    const p = pts.reduce((a, b) => Math.abs(X(b.x) - px) < Math.abs(X(a.x) - px) ? b : a);
+    xh.setAttribute("x1", X(p.x)); xh.setAttribute("x2", X(p.x)); xh.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", X(p.x)); dot.setAttribute("cy", Y(p.n)); dot.setAttribute("visibility", "visible");
+    const k = p.sa > p.sb ? ["w", "勝"] : p.sa < p.sb ? ["l", "敗"] : ["", "和"];
+    placeTip(box, tip, X(p.x) * bx.width / W, `<b>${season(p.y)} 第 ${p.w} 週${p.po ? "（季後賽）" : ""}</b><br>vs ${esc(DISP(p.o))} <span class="${k[0]}">${p.sa}-${p.sb} ${k[1]}</span>　累計 ${sgn(p.n)}`);
+  };
+  const leave = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
+}
+
+// 歷年最終名次
+function drawFinals() {
+  const box = document.getElementById("finals"), N = MGRS.length;
+  const rowH = 22, padT = 10, padB = 30, padL = 34, padR = 96, H = padT + (N - 1) * rowH + padB;
+  const { W, svg, tip } = chartShell(box, H);
+  svg.setAttribute("aria-label", "每季最終名次");
+  const X = i => padL + i * (W - padL - padR) / (YEARS.length - 1), Y = r => padT + (r - 1) * rowH;
+  const g = sv("g", {}, svg);
+  sv("line", { class: "cut", x1: padL, x2: W - padR, y1: Y(8.5), y2: Y(8.5) }, g);
+  YEARS.forEach((y, i) => {
+    sv("line", { class: "grid", x1: X(i), x2: X(i), y1: padT - 6, y2: Y(N) + 6 }, g);
+    svText(season(y), { x: X(i), y: H - 8, "text-anchor": "middle" }, g);
+  });
+  drawLines(g, MGRS.map(m => [m, YEARS.map((y, i) => [X(i), Y(tot[m].fins[y])])]), cur);
+  for (const m of MGRS) {
+    const r = tot[m].fins[YEARS[YEARS.length - 1]];
+    const t = svText(`${r}  ${DISP(m)}`, { x: W - padR + 10, y: Y(r) + 4.5, class: "lab" + (m === cur ? " on" : "") }, g);
+    t.addEventListener("click", () => showMgr(m));
+  }
+  YEARS.forEach((y, i) => sv("circle", { class: "dot", cx: X(i), cy: Y(tot[cur].fins[y]), r: 4.5 }, g));
+  const move = ev => {
+    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
+    if (px > W - padR + 4) { tip.hidden = true; return; }
+    const i = Math.max(0, Math.min(YEARS.length - 1, Math.round((px - padL) / ((W - padL - padR) / (YEARS.length - 1))))), y = YEARS[i];
+    const row = D.seasons[y].table.find(r => r.mgr === cur);
+    placeTip(box, tip, X(i) * bx.width / W, `<b>${season(y)}　${esc(DISP(cur))} 第 ${row.rank} 名</b><br>類別 ${rec(row.cat)}`);
+  };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", () => { tip.hidden = true; });
+}
+
+// 歷季排名
+const tabs = document.getElementById("season-tabs"), stab = document.getElementById("season-table");
+function showSeason(y) {
+  curY = y;
+  [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === y)));
+  const s = D.seasons[y];
+  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名</th><th class="hide-sm">經理</th><th class="r">類別 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
+  const tb = el("tbody");
+  s.table.forEach(r => {
+    const i = s.podium.indexOf(r.mgr);
+    const medal = i === 0 ? `<span class="medal m1">冠軍</span>` : i === 1 ? `<span class="medal">亞軍</span>` : i === 2 ? `<span class="medal">季軍</span>` : "";
+    tb.append(el("tr", r.rank === 8 ? "cut" : "", `<td class="rank ${r.rank === 1 ? "p1" : ""}">${r.rank}</td><td>${tname(r.team)}${medal}<div class="mgr">${esc(DISP(r.mgr))}</div></td><td class="hide-sm mgr">${esc(DISP(r.mgr))}</td><td class="r num">${rec(r.cat)}</td><td class="r num hide-sm">${pct(...r.cat).toFixed(3).replace(/^0/, "")}</td>`));
+  });
+  stab.append(tb);
+  if (cur) drawBump();
+  try { localStorage.setItem("season", y); } catch (e) {}
+}
+YEARS.forEach(y => { const b = el("button", "tab", season(y)); b.dataset.y = y; b.type = "button"; b.onclick = () => showSeason(y); tabs.append(b); });
+
+// 歷史交手
+const sel = document.getElementById("mgr-select");
+order.forEach(m => sel.append(new Option(DISP(m), m)));
+const vsList = document.getElementById("vs-list"), mt = document.getElementById("matrix");
+function showMgr(m) {
+  cur = m; sel.value = m;
+  const t = tot[m];
+  document.getElementById("mgr-total").textContent = `三季對戰 ${t.w}-${t.l}-${t.t}`;
+  document.querySelectorAll(".key-name").forEach(e => { e.textContent = DISP(m); });
+  vsList.innerHTML = "";
+  const opps = Object.keys(D.h2h[m]).sort((a, b) => { const x = D.h2h[m][a], y = D.h2h[m][b]; return (y.w - y.l) - (x.w - x.l) || (y.cw - y.cl) - (x.cw - x.cl); });
+  for (const o of opps) {
+    const r = D.h2h[m][o];
+    const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
+    const dir = r.w > r.l ? "up" : r.w < r.l ? "down" : "";
+    vsList.append(el("div", "vs", `<div class="vs-top"><b>vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span></div><div class="legend">類別總比分 <span class="num">${r.cw}-${r.cl}</span></div><div class="games">${chips}</div>`));
+  }
+  [...mt.querySelectorAll("tbody tr")].forEach(tr => tr.classList.toggle("sel", tr.dataset.m === m));
+  drawBump(); drawCareer(); drawFinals();
+  try { localStorage.setItem("mgr", m); } catch (e) {}
+}
+sel.onchange = () => showMgr(sel.value);
+mt.innerHTML = `<thead><tr><th class="row"></th>${order.map(m => `<th>${esc(DISP(m))}</th>`).join("")}<th>總計</th></tr></thead>`;
+const mtb = el("tbody");
+for (const a of order) {
+  const tr = el("tr"); tr.dataset.m = a;
+  tr.append(el("th", "row", esc(DISP(a))));
+  for (const b of order) {
+    if (a === b) { tr.append(el("td", "self", "—")); continue; }
+    const r = D.h2h[a][b], n = r.w + r.l + r.t, d = (r.w - r.l) / Math.max(n, 1);
+    const td = el("td", "", `${r.w}-${r.l}${r.t ? "-" + r.t : ""}`);
+    td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.12 + d * 0.5})` : d < 0 ? `rgba(var(--heat-l), ${0.12 - d * 0.5})` : "var(--panel)";
+    td.title = `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`;
+    td.onclick = () => { showMgr(a); document.getElementById("h2h").scrollIntoView(); };
+    tr.append(td);
+  }
+  tr.append(el("td", "tot", `${tot[a].w}-${tot[a].l}-${tot[a].t}`));
+  mtb.append(tr);
+}
+mt.append(mtb);
+
+let startY = YEARS[YEARS.length - 1];
+try { const v = +localStorage.getItem("season"); if (YEARS.includes(v)) startY = v; } catch (e) {}
+showSeason(startY);
+let startM = order[0];
+try { const v = localStorage.getItem("mgr"); if (v && D.h2h[v]) startM = v; } catch (e) {}
+showMgr(startM);
+let rw = 0;
+new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); drawFinals(); } }).observe(document.querySelector(".wrap"));
+
+// 紀錄牆
+const cr = document.getElementById("cat-recs");
+for (const r of D.catrecs) cr.append(el("div", "rec", `<span class="k">${CATNAME[r.cat]} ${esc(r.cat)}</span><span class="v">${fmt(r.cat, r.val)}</span><span class="who">${esc(DISP(r.mgr))}</span><span class="when">${r.team ? esc(r.team) : "（空白隊名）"}<br>${season(r.y)} 第 ${r.w} 週</span>`));
+const sk = document.getElementById("streaks");
+for (const s of D.streaks.slice(0, 8)) sk.append(el("div", "streak", `<span class="n ${s.kind === "W" ? "w" : "l"}">${s.len}</span><span class="d"><b>${esc(DISP(s.mgr))}</b> ${s.kind === "W" ? "連勝" : "連敗"}<div class="mgr">${s.team ? esc(s.team) : "（空白隊名）"}</div></span><span class="when">${season(s.y)} W${s.from}–${s.to}</span>`));
+const bl = document.getElementById("blowouts");
+for (const g of D.blowouts.slice(0, 8)) {
+  const [w, l, sw, sl] = g.sa >= g.sb ? [g.a, g.b, g.sa, g.sb] : [g.b, g.a, g.sb, g.sa];
+  bl.append(el("div", "streak", `<span class="n w">${sw}-${sl}</span><span class="d"><b>${esc(DISP(w))}</b> 打 ${esc(DISP(l))}</span><span class="when">${season(g.y)} W${g.w}</span>`));
+}
+
+// 隊名博物館
+const nl = document.getElementById("name-list");
+for (const m of [...MGRS].sort((a, b) => DISP(a).localeCompare(DISP(b), "zh-Hant"))) {
+  nl.append(el("div", "nm", `<b>${esc(DISP(m))}</b><ol>${YEARS.map(y => `<li><span>${y}</span>${D.names[m][y] ? esc(D.names[m][y]) : "<i>（空白隊名）</i>"}</li>`).join("")}</ol>`));
+}
+</script>
+
+</body>
+</html>
