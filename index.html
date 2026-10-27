@@ -177,20 +177,34 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 .mhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 16px; }
 
 /* playoffs */
-.po-season { display: grid; gap: 8px; }
-.rounds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.round { display: grid; gap: 6px; align-content: start; min-width: 0; }
-.round h4 { margin: 0; font-size: var(--fs-s); font-weight: 500; color: var(--muted); }
-.pg { background: var(--panel); border: 0.5px solid var(--line); padding: 6px 10px; display: grid; gap: 2px; min-width: 0; }
-.pg .lab { font-size: var(--fs-s); color: var(--muted); }
-.pg .final { color: var(--gold-text); font-weight: 700; }
-.pr { display: grid; grid-template-columns: 1.6em minmax(0, 1fr) auto; gap: 6px; align-items: baseline; color: var(--muted); }
-.pr .sd { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; }
-.pr .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bracket-wrap { overflow-x: auto; overflow-y: hidden; }
+.bracket { position: relative; min-width: 600px; }
+.bracket svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.bracket .cn { fill: none; stroke: var(--line2); stroke-width: 1; }
+.bracket .cn.me { stroke: var(--accent); stroke-width: 2; }
+.bracket .colh { position: absolute; top: 0; font-size: var(--fs-s); color: var(--muted); }
+.bracket .colh b { color: var(--ink); font-weight: 700; margin-right: 6px; }
+.bracket .tag { position: absolute; font-size: var(--fs-s); color: var(--muted); }
+.bracket .tag.gold { color: var(--gold-text); font-weight: 700; }
+.pc { position: absolute; background: var(--panel); border: 0.5px solid var(--line); display: grid; }
+.pc.final { border-color: var(--gold); }
+.pr { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; height: 42px; padding-right: 10px; color: var(--muted); }
+.pr .pn .tn, .pr .pn .mg { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+.pr .pn .mg { font-size: var(--fs-s); font-weight: 400; color: var(--muted); }
+.pr .pn .tn.blank { font-weight: 400; color: var(--muted); }
+.pr + .pr { border-top: 0.5px solid var(--line); }
+.pr .sd { align-self: stretch; display: grid; place-items: center; font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; background: var(--step); color: var(--muted); }
+.pr .pn { min-width: 0; overflow: hidden; }
 .pr .sc { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
 .pr.win { color: var(--ink); font-weight: 700; }
-.pr.me .nm { color: var(--accent-text); }
-.po-grid { display: grid; gap: 32px; }
+.pr.win .sd { background: var(--ink); color: var(--bg); }
+.pr.champ .sd { background: var(--gold); color: var(--gold-ink); }
+.pr.me .pn .mg { color: var(--accent-text); font-weight: 700; }
+.cons { display: grid; gap: 8px; margin-top: 8px; }
+.cons-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 600px; }
+.cons-col { display: grid; gap: 8px; align-content: start; }
+.cons-col .pc { position: static; }
+.cons-col .tagline { font-size: var(--fs-s); color: var(--muted); }
 #po-table tr.sel b { color: var(--accent-text); }
 @media (max-width: 560px) { .bar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .bar-in { flex-wrap: nowrap; } .who-pick label { display: none; } .rounds { gap: 6px; } .pg { padding: 6px; } .pr { grid-template-columns: 1.2em minmax(0, 1fr) auto; gap: 4px; } }
 
@@ -272,7 +286,9 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 
   <section id="playoffs">
     <div class="sec-head"><h2>季後賽</h2></div>
-    <div class="po-grid" id="po-grid"></div>
+    <div class="tabs" id="po-tabs" role="group" aria-label="選擇球季"></div>
+    <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
+    <div class="cons" id="cons"></div>
     <h3>季後賽戰績</h3>
     <div class="scroll"><table id="po-table"></table></div>
   </section>
@@ -639,7 +655,7 @@ let startM = order[0];
 try { const v = localStorage.getItem("mgr"); if (v && D.h2h[v]) startM = v; } catch (e) {}
 showMgr(startM);
 let rw = 0;
-new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); drawFinals(); } }).observe(document.querySelector(".wrap"));
+new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); drawFinals(); if (poReady) drawBracket(); } }).observe(document.querySelector(".wrap"));
 
 // 季後賽：每季三週，依最終名次判斷每一場是哪種比賽；種子＝例行賽最後排名
 const SEED = Object.fromEntries(YEARS.map(y => { const wr = weeklyRanks(y); return [y, Object.fromEntries(MGRS.map(m => [m, wr.ranks[m][wr.nW - 1]]))]; }));
@@ -661,22 +677,58 @@ const PO = Object.fromEntries(YEARS.map(y => {
     return { ...g, i, label, aWin, key: lo };
   }).sort((p, q) => p.key - q.key))];
 }));
-const ROUNDS = ["第一輪", "第二輪", "決賽週"];
+let poY = YEARS[YEARS.length - 1];
+const potabs = document.getElementById("po-tabs");
+YEARS.forEach(y => { const b = el("button", "tab", season(y)); b.type = "button"; b.dataset.y = y; b.onclick = () => { poY = y; drawBracket(); }; potabs.append(b); });
+const win = g => g.aWin ? g.a : g.b, lose = g => g.aWin ? g.b : g.a;
+function card(y, g, cls = "", champ = false) {
+  const side = (m, s, w) => { const tn = D.names[m][y];
+    return `<div class="pr ${w ? "win" : ""} ${w && champ ? "champ" : ""} ${m === cur ? "me" : ""}" title="${esc(tn || "（空白隊名）")}（${esc(DISP(m))}）"><span class="sd">${SEED[y][m]}</span><span class="pn"><span class="tn ${tn ? "" : "blank"}">${tn ? esc(tn) : "（空白隊名）"}</span><span class="mg">${esc(DISP(m))}</span></span><span class="sc">${s}</span></div>`; };
+  const [top, bot] = SEED[y][g.a] <= SEED[y][g.b] ? [[g.a, g.sa, g.aWin], [g.b, g.sb, !g.aWin]] : [[g.b, g.sb, !g.aWin], [g.a, g.sa, g.aWin]];
+  const c = el("div", "pc " + cls, side(...top) + side(...bot));
+  return c;
+}
+// 冠軍組畫成對戰樹：第一輪 → 準決賽 → 冠軍戰（季軍戰放在冠軍戰下面）；第 5–8 名另外列
+function drawBracket() {
+  [...potabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === poY)));
+  const y = poY, [r1, r2, r3] = PO[y];
+  const bySeed = (p, q) => Math.min(SEED[y][p.a], SEED[y][p.b]) - Math.min(SEED[y][q.a], SEED[y][q.b]);
+  const semis = r2.filter(g => g.label === "準決賽").sort(bySeed);
+  const feed = m => r1.find(g => g.a === m || g.b === m);
+  const r1o = semis.flatMap(s => [feed(s.a), feed(s.b)].sort(bySeed));
+  const final = r3.find(g => g.label === "冠軍戰"), third = r3.find(g => g.label === "季軍戰");
+  const box = document.getElementById("bracket"); box.innerHTML = "";
+  const W = Math.max(box.clientWidth, 600), CH = 85, G = 14, HEAD = 28, CX = 32, colW = (W - 2 * CX) / 3;
+  const X = i => i * (colW + CX), y1 = i => HEAD + i * (CH + G);
+  const ys = [r1o.map((g, i) => y1(i))];
+  ys.push(semis.map((g, j) => (ys[0][2 * j] + ys[0][2 * j + 1]) / 2));
+  const yF = (ys[1][0] + ys[1][1]) / 2, yT = yF + CH + 44;
+  const H = Math.max(ys[0][3] + CH, yT + CH) + 4;
+  box.style.height = H + "px";
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H }, box);
+  [["第一輪", r1], ["準決賽", r2], ["冠軍戰", r3]].forEach(([n, gs], i) => box.append(Object.assign(el("div", "colh", `<b>${n}</b>W${gs[0].w}`), { style: `left:${X(i)}px` })));
+  const put = (g, x, yy, cls, champ) => { const c = card(y, g, cls, champ); c.style.left = x + "px"; c.style.top = yy + "px"; c.style.width = colW + "px"; box.append(c); };
+  const link = (from, yFrom, yTo, i) => {
+    const x1 = X(i) + colW, x2 = X(i + 1), xm = x1 + CX / 2, a = yFrom + CH / 2, b = yTo + CH / 2;
+    sv("path", { class: "cn" + (win(from) === cur ? " me" : ""), d: `M${x1} ${a}H${xm}V${b}H${x2}` }, svg);
+  };
+  r1o.forEach((g, i) => { put(g, X(0), ys[0][i]); link(g, ys[0][i], ys[1][i >> 1], 0); });
+  semis.forEach((g, j) => { put(g, X(1), ys[1][j]); link(g, ys[1][j], yF, 1); });
+  box.append(Object.assign(el("div", "tag gold", "冠軍戰"), { style: `left:${X(2)}px;top:${yF - 22}px` }));
+  put(final, X(2), yF, "final", true);
+  box.append(Object.assign(el("div", "tag", "季軍戰"), { style: `left:${X(2)}px;top:${yT - 22}px` }));
+  put(third, X(2), yT);
+  // 第 5–8 名
+  const cons = document.getElementById("cons");
+  const c2 = r2.filter(g => g.label !== "準決賽").sort(bySeed), c3 = r3.filter(g => g.label === "第五名" || g.label === "第七名").sort((p, q) => p.key - q.key);
+  cons.innerHTML = `<h3>第 5–8 名排名賽</h3>`;
+  const row = el("div", "cons-row"), colA = el("div", "cons-col", `<span class="tagline">第一輪輸的四隊　W${c2[0].w}</span>`), colB = el("div", "cons-col", `<span class="tagline">W${c3[0].w}</span>`);
+  c2.forEach(g => colA.append(card(y, g)));
+  c3.forEach(g => { colB.append(el("span", "tagline", g.label)); colB.append(card(y, g)); });
+  row.append(colA, colB); cons.append(row);
+}
 function drawPlayoffs() {
-  const grid = document.getElementById("po-grid"); grid.innerHTML = "";
-  for (const y of [...YEARS].reverse()) {
-    const box = el("div", "po-season", `<h3>${season(y)}</h3>`), rounds = el("div", "rounds");
-    PO[y].forEach((games, i) => {
-      const col = el("div", "round", `<h4>${ROUNDS[i]}　W${games[0].w}</h4>`);
-      for (const g of games) {
-        const side = (m, s, win) => `<div class="pr ${win ? "win" : ""} ${m === cur ? "me" : ""}"><span class="sd">${SEED[y][m]}</span><span class="nm">${esc(DISP(m))}</span><span class="sc">${s}</span></div>`;
-        const [top, bot] = SEED[y][g.a] <= SEED[y][g.b] ? [[g.a, g.sa, g.aWin], [g.b, g.sb, !g.aWin]] : [[g.b, g.sb, !g.aWin], [g.a, g.sa, g.aWin]];
-        col.append(el("div", "pg", `${g.i || g.sa === g.sb ? `<span class="lab ${g.label === "冠軍戰" ? "final" : ""}">${g.i ? g.label : ""}${g.i && g.sa === g.sb ? "　" : ""}${g.sa === g.sb ? "平手" : ""}</span>` : ""}${side(...top)}${side(...bot)}`));
-      }
-      rounds.append(col);
-    });
-    box.append(rounds); grid.append(box);
-  }
+  drawBracket();
   // 季後賽戰績
   const rows = MGRS.map(m => {
     let w = 0, l = 0, t = 0, apps = 0, finals = 0;
