@@ -52,7 +52,7 @@
 body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: var(--fs-m); line-height: 1.6; }
 .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
 h1, h2, h3 { text-wrap: balance; margin: 0; }
-.num { font-family: var(--display); font-variant-numeric: tabular-nums; }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* rafters */
 .head { padding-block: 40px 0; }
@@ -110,7 +110,7 @@ th[aria-sort] button { color: var(--ink); font-weight: 700; }
 .chart svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; }
 .chart text { font: 500 var(--fs-s) var(--body); fill: var(--muted); }
 .chart text.on { fill: var(--ink); font-weight: 700; }
-.chart .ln { fill: none; stroke: var(--line2); stroke-width: 1.25; stroke-linejoin: round; stroke-linecap: round; }
+.chart .ln { fill: none; stroke: var(--line2); stroke-opacity: .55; stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; }
 .chart .ln.on { stroke: var(--accent); stroke-width: 2.5; }
 .chart .ring { fill: none; stroke: var(--bg); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
 .chart .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
@@ -157,6 +157,10 @@ section { scroll-margin-top: 64px; }
 /* h2h */
 .h2h-pick { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
 select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(--panel); color: var(--ink); border: 0.5px solid var(--line2); }
+.vs-grp { margin: 20px 0 8px; }
+.vs-grp h3 { display: flex; align-items: baseline; gap: 8px; }
+.vs-grp h3.up { color: var(--win); } .vs-grp h3.down { color: var(--loss); }
+.vs-grp h3 span { font-size: var(--fs-s); font-weight: 500; color: var(--muted); }
 .vs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 10px; }
 .vs { background: var(--panel); border: 0.5px solid var(--line); padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
 .vs-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
@@ -183,6 +187,11 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 /* playoffs */
 .bracket-wrap { overflow-x: auto; overflow-y: hidden; }
 .bracket { position: relative; min-width: 600px; }
+#alltime-table td:first-child, #po-table td:first-child { white-space: nowrap; }
+.bracket.stack { min-width: 0; display: grid; gap: 16px; }
+.bracket.stack .pc { position: static; }
+.cons-col .tagline b { color: var(--ink); font-weight: 700; }
+.cons-col .tagline.gold, .cons-col .tagline.gold b { color: var(--gold-text); }
 .bracket svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
 .bracket .cn { fill: none; stroke: var(--line2); stroke-width: 1; }
 .bracket .cn.me { stroke: var(--accent); stroke-width: 2; }
@@ -209,7 +218,7 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 .cons-col { display: grid; gap: 8px; align-content: start; }
 .cons-col .pc { position: static; }
 .cons-col .tagline { font-size: var(--fs-s); color: var(--muted); }
-#po-table tr.sel b { color: var(--accent-text); }
+#po-table tr.sel b, #alltime-table tr.sel b, #season-table tr.sel .mgr { color: var(--accent-text); font-weight: 700; }
 @media (max-width: 560px) { .bar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .bar-in { flex-wrap: nowrap; } .who-pick label { display: none; } .rounds { gap: 6px; } .pg { padding: 6px; } .pr { grid-template-columns: 1.2em minmax(0, 1fr) auto; gap: 4px; } }
 
 /* records */
@@ -273,8 +282,6 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 
   <section id="alltime">
     <div class="sec-head"><h2>三季總表</h2></div>
-    <div class="ch"><h3>歷年最終名次</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
-    <div class="chart" id="finals"></div>
     <div class="ch"><h3>生涯對戰淨勝場</h3><span class="key"><i></i><b class="key-name"></b><i class="band"></i>全聯盟範圍<i class="med"></i>中位數</span></div>
     <div class="chart" id="career"></div>
     <div class="scroll"><table id="alltime-table"></table></div>
@@ -283,7 +290,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
   <section id="h2h">
     <div class="sec-head"><h2>歷史交手</h2></div>
     <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm po"></span>季後賽</span></div>
-    <div class="vs-list" id="vs-list"></div>
+    <div id="vs-list"></div>
     <div class="mhead"><h3>全聯盟交手表</h3><div class="tabs" id="matrix-tabs" role="group" aria-label="比賽範圍"></div></div>
     <div class="scroll"><table class="matrix" id="matrix"></table></div>
   </section>
@@ -365,7 +372,7 @@ const tot = Object.fromEntries(MGRS.map(m => {
 const order = [...MGRS].sort((a, b) => pct(tot[b].w, tot[b].l, tot[b].t) - pct(tot[a].w, tot[a].l, tot[a].t));
 const at = document.getElementById("alltime-table");
 // 欄位：[標題, 排序值（大的在前；null 表示不能排）, 欄 class]
-const ATCOLS = [["經理", null, ""], ["冠軍", m => tot[m].titles, "r"], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
+const ATCOLS = [["經理", null, ""], ["冠軍", m => tot[m].titles, "r hide-sm"], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
   ["類別", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
 let atSort = 3;
 function drawAlltime() {
@@ -386,11 +393,10 @@ function drawAlltime() {
   for (const m of rows) {
     const t = tot[m];
     const fins = YEARS.map(y => { const i = D.seasons[y].podium.indexOf(m); return `<span class="fin ${i >= 0 ? "f" + (i + 1) : ""}" title="${season(y)}">${t.fins[y]}</span>`; }).join("");
-    atb.append(el("tr", "", `<td><b>${esc(DISP(m))}</b></td><td class="r num">${t.titles || "–"}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td class="r num hide-sm">${t.lasts || "–"}</td><td><div class="fins">${fins}</div></td>`));
+    atb.append(el("tr", m === cur ? "sel" : "", `<td><b>${esc(DISP(m))}</b></td><td class="r num hide-sm">${t.titles || "–"}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td class="r num hide-sm">${t.lasts || "–"}</td><td><div class="fins">${fins}</div></td>`));
   }
   at.append(atb);
 }
-drawAlltime();
 
 // 走勢圖共用
 const SVG = "http://www.w3.org/2000/svg";
@@ -525,50 +531,23 @@ function drawCareer() {
   svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
 }
 
-// 歷年最終名次
-function drawFinals() {
-  const box = document.getElementById("finals"), N = MGRS.length;
-  const rowH = 22, padT = 10, padB = 30, padL = 34, padR = 96, H = padT + (N - 1) * rowH + padB;
-  const { W, svg, tip } = chartShell(box, H);
-  svg.setAttribute("aria-label", "每季最終名次");
-  const X = i => padL + i * (W - padL - padR) / (YEARS.length - 1), Y = r => padT + (r - 1) * rowH;
-  const g = sv("g", {}, svg);
-  sv("line", { class: "cut", x1: padL, x2: W - padR, y1: Y(8.5), y2: Y(8.5) }, g);
-  YEARS.forEach((y, i) => {
-    sv("line", { class: "grid", x1: X(i), x2: X(i), y1: padT - 6, y2: Y(N) + 6 }, g);
-    svText(season(y), { x: X(i), y: H - 8, "text-anchor": "middle" }, g);
-  });
-  drawLines(g, MGRS.map(m => [m, YEARS.map((y, i) => [X(i), Y(tot[m].fins[y])])]), cur);
-  for (const m of MGRS) {
-    const r = tot[m].fins[YEARS[YEARS.length - 1]];
-    const t = svText(`${r}  ${DISP(m)}`, { x: W - padR + 10, y: Y(r) + 4.5, class: "lab" + (m === cur ? " on" : "") }, g);
-    t.addEventListener("click", () => showMgr(m));
-  }
-  YEARS.forEach((y, i) => sv("circle", { class: "dot", cx: X(i), cy: Y(tot[cur].fins[y]), r: 4.5 }, g));
-  const move = ev => {
-    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
-    if (px > W - padR + 4) { tip.hidden = true; return; }
-    const i = Math.max(0, Math.min(YEARS.length - 1, Math.round((px - padL) / ((W - padL - padR) / (YEARS.length - 1))))), y = YEARS[i];
-    const row = D.seasons[y].table.find(r => r.mgr === cur);
-    placeTip(box, tip, X(i) * bx.width / W, `<b>${season(y)}　${esc(DISP(cur))} 第 ${row.rank} 名</b><br>類別 ${rec(row.cat)}`);
-  };
-  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", () => { tip.hidden = true; });
-}
-
 // 歷季排名
+const markSeason = () => stab.querySelectorAll("tbody tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.m === cur));
 const tabs = document.getElementById("season-tabs"), stab = document.getElementById("season-table");
 function showSeason(y) {
   curY = y;
   [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === y)));
   const s = D.seasons[y];
-  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名</th><th class="hide-sm">經理</th><th class="r">類別 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
+  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">類別 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
   const tb = el("tbody");
   s.table.forEach(r => {
     const i = s.podium.indexOf(r.mgr);
     const medal = i === 0 ? `<span class="medal m1">冠軍</span>` : i === 1 ? `<span class="medal">亞軍</span>` : i === 2 ? `<span class="medal">季軍</span>` : "";
-    tb.append(el("tr", r.rank === 8 ? "cut" : "", `<td class="rank ${r.rank === 1 ? "p1" : ""}">${r.rank}</td><td>${tname(r.team)}${medal}<div class="mgr">${esc(DISP(r.mgr))}</div></td><td class="hide-sm mgr">${esc(DISP(r.mgr))}</td><td class="r num">${rec(r.cat)}</td><td class="r num hide-sm">${pct(...r.cat).toFixed(3).replace(/^0/, "")}</td>`));
+    const tr = el("tr", r.rank === 8 ? "cut" : "", `<td class="rank ${r.rank === 1 ? "p1" : ""}">${r.rank}</td><td>${tname(r.team)}${medal}<div class="mgr">${esc(DISP(r.mgr))}</div></td><td class="r num">${rec(r.cat)}</td><td class="r num hide-sm">${pct(...r.cat).toFixed(3).replace(/^0/, "")}</td>`);
+    tr.dataset.m = r.mgr; tb.append(tr);
   });
   stab.append(tb);
+  markSeason();
   if (cur) drawBump();
   try { localStorage.setItem("season", y); } catch (e) {}
 }
@@ -585,14 +564,21 @@ function showMgr(m) {
   document.querySelectorAll(".key-name").forEach(e => { e.textContent = DISP(m); });
   vsList.innerHTML = "";
   const opps = Object.keys(D.h2h[m]).sort((a, b) => { const x = D.h2h[m][a], y = D.h2h[m][b]; return (y.w - y.l) - (x.w - x.l) || (y.cw - y.cl) - (x.cw - x.cl); });
-  for (const o of opps) {
-    const r = D.h2h[m][o];
-    const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
-    const dir = r.w > r.l ? "up" : r.w < r.l ? "down" : "";
-    vsList.append(el("div", "vs", `<div class="vs-top"><b>vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span></div><div class="legend">類別總比分 <span class="num">${r.cw}-${r.cl}</span></div><div class="games">${chips}</div>`));
+  // 分三組：佔上風、打平、吃虧，組內照淨勝場排
+  const grp = o => Math.sign(D.h2h[m][o].w - D.h2h[m][o].l);
+  for (const [k, label, cls] of [[1, "佔上風", "up"], [0, "打平", ""], [-1, "吃虧", "down"]]) {
+    const os = opps.filter(o => grp(o) === k);
+    if (!os.length) continue;
+    const list = el("div", "vs-list");
+    for (const o of os) {
+      const r = D.h2h[m][o];
+      const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
+      list.append(el("div", "vs", `<div class="vs-top"><b>vs ${esc(DISP(o))}</b><span class="vs-rec ${cls}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span></div><div class="legend">類別總比分 <span class="num">${r.cw}-${r.cl}</span></div><div class="games">${chips}</div>`));
+    }
+    vsList.append(el("div", "vs-grp", `<h3 class="${cls}">${label}<span>${os.length} 人</span></h3>`), list);
   }
   [...mt.querySelectorAll("tbody tr")].forEach(tr => tr.classList.toggle("sel", tr.dataset.m === m));
-  drawBump(); drawCareer(); drawFinals(); if (poReady) drawPlayoffs();
+  drawBump(); drawCareer(); drawAlltime(); markSeason(); if (poReady) drawPlayoffs();
   try { localStorage.setItem("mgr", m); } catch (e) {}
 }
 sel.onchange = () => showMgr(sel.value);
@@ -672,7 +658,7 @@ let startM = order[0];
 try { const v = localStorage.getItem("mgr"); if (v && D.h2h[v]) startM = v; } catch (e) {}
 showMgr(startM);
 let rw = 0;
-new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); drawFinals(); if (poReady) drawBracket(); } }).observe(document.querySelector(".wrap"));
+new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); if (poReady) drawBracket(); } }).observe(document.querySelector(".wrap"));
 
 // 季後賽：每季三週，依最終名次判斷每一場是哪種比賽；種子＝例行賽最後排名
 const SEED = Object.fromEntries(YEARS.map(y => { const wr = weeklyRanks(y); return [y, Object.fromEntries(MGRS.map(m => [m, wr.ranks[m][wr.nW - 1]]))]; }));
@@ -715,6 +701,17 @@ function drawBracket() {
   const r1o = semis.flatMap(s => [feed(s.a), feed(s.b)].sort(bySeed));
   const final = r3.find(g => g.label === "冠軍戰"), third = r3.find(g => g.label === "季軍戰");
   const box = document.getElementById("bracket"); box.innerHTML = "";
+  // 手機：一輪一輪往下排，不畫連接線
+  const narrow = box.parentElement.clientWidth < 600;
+  box.classList.toggle("stack", narrow);
+  if (narrow) {
+    box.style.height = "";
+    for (const [n, gs, extra] of [["第一輪", r1o], ["準決賽", semis], ["冠軍戰", [final], "final"], ["季軍戰", [third]]]) {
+      const col = el("div", "cons-col", `<span class="tagline ${extra ? "gold" : ""}"><b>${n}</b>　W${gs[0].w}</span>`);
+      gs.forEach(g => col.append(card(y, g, extra || "", extra === "final")));
+      box.append(col);
+    }
+  } else {
   const W = Math.max(box.clientWidth, 600), CH = 85, G = 14, HEAD = 28, CX = 32, colW = (W - 2 * CX) / 3;
   const X = i => i * (colW + CX), y1 = i => HEAD + i * (CH + G);
   const ys = [r1o.map((g, i) => y1(i))];
@@ -735,6 +732,7 @@ function drawBracket() {
   put(final, X(2), yF, "final", true);
   box.append(Object.assign(el("div", "tag", "季軍戰"), { style: `left:${X(2)}px;top:${yT - 22}px` }));
   put(third, X(2), yT);
+  }
   // 第 5–8 名
   const cons = document.getElementById("cons");
   const c2 = r2.filter(g => g.label !== "準決賽").sort(bySeed), c3 = r3.filter(g => g.label === "第五名" || g.label === "第七名").sort((p, q) => p.key - q.key);
@@ -760,8 +758,8 @@ function drawPlayoffs() {
     }
     return { m, w, l, t, apps, finals, titles: tot[m].titles };
   }).filter(r => r.apps).sort((p, q) => q.titles - p.titles || q.finals - p.finals || (q.w - q.l) - (p.w - p.l) || q.apps - p.apps);
-  document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th><th class="r">進季後賽</th><th class="r">季後賽戰績</th><th class="r">打進冠軍戰</th><th class="r">冠軍</th></tr></thead><tbody>${rows.map(r =>
-    `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b></td><td class="r num">${r.apps} 次</td><td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td><td class="r num">${r.finals || "–"}</td><td class="r num">${r.titles ? `<span class="medal m1">${r.titles}</span>` : "–"}</td></tr>`).join("")}</tbody>`;
+  document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th><th class="r">進季後賽</th><th class="r">季後賽戰績</th><th class="r hide-sm">打進冠軍戰</th><th class="r">冠軍</th></tr></thead><tbody>${rows.map(r =>
+    `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b></td><td class="r num">${r.apps} 次</td><td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td><td class="r num hide-sm">${r.finals || "–"}</td><td class="r num">${r.titles ? `<span class="medal m1">${r.titles}</span>` : "–"}</td></tr>`).join("")}</tbody>`;
 }
 
 poReady = true; drawPlayoffs();
