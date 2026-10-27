@@ -123,6 +123,9 @@ th[aria-sort] button { color: var(--ink); font-weight: 700; }
 .tip { position: absolute; top: 0; pointer-events: none; background: var(--panel); border: 0.5px solid var(--line2); padding: 6px 10px; font-size: var(--fs-s); line-height: 1.5; white-space: nowrap; z-index: 2; }
 .tip b { font-weight: 700; }
 .tip .w { color: var(--win); } .tip .l { color: var(--loss); }
+.mtip { position: fixed; top: 0; left: 0; }
+.mtip .g { display: grid; grid-template-columns: auto auto auto; gap: 0 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.mtip .po { color: var(--gold-text); }
 
 /* top bar */
 .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 0.5px solid var(--line); margin-top: 24px; }
@@ -532,6 +535,28 @@ function showMgr(m) {
 }
 sel.onchange = () => showMgr(sel.value);
 mt.innerHTML = `<thead><tr><th class="row"></th>${order.map(m => `<th>${esc(DISP(m))}</th>`).join("")}<th>總計</th></tr></thead>`;
+// 交手表每格：滑過（手機點）列出每一場
+const mtip = el("div", "tip mtip"); mtip.hidden = true; document.body.append(mtip);
+let lastPointer = "mouse";
+document.addEventListener("pointerdown", ev => { lastPointer = ev.pointerType; });
+document.addEventListener("click", () => { mtip.hidden = true; });
+window.addEventListener("scroll", () => { if (lastPointer !== "mouse") mtip.hidden = true; }, { passive: true });
+function placeMtip(ev) {
+  const w = mtip.offsetWidth, h = mtip.offsetHeight, vw = document.documentElement.clientWidth, vh = window.innerHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > vw - 8) x = Math.max(8, ev.clientX - 14 - w);
+  if (y + h > vh - 8) y = Math.max(8, ev.clientY - 14 - h);
+  mtip.style.left = x + "px"; mtip.style.top = y + "px";
+}
+function showMtip(a, b, ev) {
+  const r = D.h2h[a][b];
+  const rows = r.games.map(g => {
+    const [x, y] = g.score.split("-").map(Number), k = x > y ? ["w", "勝"] : x < y ? ["l", "敗"] : ["", "和"];
+    return `<span>${season(g.season)} W${g.week}${g.playoff ? ` <span class="po">季後賽</span>` : ""}</span><span class="${k[0]}">${g.score}</span><span class="${k[0]}">${k[1]}</span>`;
+  }).join("");
+  mtip.innerHTML = `<b>${esc(DISP(a))} 對 ${esc(DISP(b))}　${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b><div class="g">${rows}</div>`;
+  mtip.hidden = false; placeMtip(ev);
+}
 const mtb = el("tbody");
 for (const a of order) {
   const tr = el("tr"); tr.dataset.m = a;
@@ -541,8 +566,15 @@ for (const a of order) {
     const r = D.h2h[a][b], n = r.w + r.l + r.t, d = (r.w - r.l) / Math.max(n, 1);
     const td = el("td", "", `${r.w}-${r.l}${r.t ? "-" + r.t : ""}`);
     td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.12 + d * 0.5})` : d < 0 ? `rgba(var(--heat-l), ${0.12 - d * 0.5})` : "var(--panel)";
-    td.title = `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`;
-    td.onclick = () => { showMgr(a); document.getElementById("h2h").scrollIntoView(); };
+    td.setAttribute("aria-label", `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`);
+    td.addEventListener("pointerenter", ev => { if (ev.pointerType === "mouse") showMtip(a, b, ev); });
+    td.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") placeMtip(ev); });
+    td.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") mtip.hidden = true; });
+    td.addEventListener("click", ev => {
+      // 滑鼠點：切換經理；手指點：顯示這格的每一場
+      if (lastPointer === "mouse") { mtip.hidden = true; showMgr(a); document.getElementById("h2h").scrollIntoView(); }
+      else { showMtip(a, b, ev); ev.stopPropagation(); }
+    });
     tr.append(td);
   }
   tr.append(el("td", "tot", `${tot[a].w}-${tot[a].l}-${tot[a].t}`));
