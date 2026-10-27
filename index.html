@@ -780,7 +780,7 @@ for (const g of D.blowouts.slice(0, 8)) {
 // 隊名博物館
 const nl = document.getElementById("name-list");
 for (const m of [...MGRS].sort((a, b) => DISP(a).localeCompare(DISP(b), "zh-Hant"))) {
-  nl.append(el("div", "nm", `<b>${esc(DISP(m))}</b><ol>${YEARS.map(y => `<li><span>${y}</span>${D.names[m][y] ? esc(D.names[m][y]) : "<i>（空白隊名）</i>"}</li>`).join("")}</ol>`));
+  nl.append(el("div", "nm", `<b>${esc(DISP(m))}</b><ol>${YEARS.map(y => `<li><span>${y}</span>${D.names[m][y] ? esc(D.names[m][y]) : "<i>（三個全形空白）</i>"}</li>`).join("")}</ol>`));
 }
 </script>
 
