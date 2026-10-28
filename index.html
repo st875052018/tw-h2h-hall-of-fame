@@ -516,7 +516,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 
   <footer>
     <div>資料來源：Yahoo Fantasy 聯盟頁面，逐場比分已用各隊賽程頁交叉核對。</div>
-    <div>名次為最終名次，含季後賽與第 5–8 名排名賽；虛線以上進季後賽。排名走勢與例行賽第一依例行賽累計類別勝率。墊底＝最終第 14 名。</div>
+    <div>名次為最終名次，含季後賽與第 5–8 名排名賽；虛線以上進季後賽。排名走勢與例行賽第一依例行賽累計類別勝率。</div>
     <div>類別王只算例行賽 7 天的正常週：計數類取每週平均，命中率與助失比用整季加總計算。賽程運氣＝例行賽實際勝場減掉「每週跟其他 13 隊都打一次」換算的應有勝場，和局算半場。</div>
     <div>單週類別紀錄只算 7 天的正常週，不含全明星週等 14 天長週。</div>
   </footer>
@@ -549,7 +549,7 @@ for (const a of MGRS) for (const b in D.h2h[a]) for (const g of D.h2h[a][b].game
 }
 for (const m of MGRS) G[m].sort((p, q) => p.y - q.y || p.w - q.w);
 
-// 冠軍獎盃＋底下的名次表（亞軍、季軍、例行賽第一、墊底），跟著「看誰」標色
+// 冠軍獎盃＋底下的名次表（亞軍、季軍、例行賽第一），跟著「看誰」標色
 const TROPHY = y => `<svg viewBox="0 0 100 124" aria-hidden="true">
 <path d="M26 22C8 22 8 50 32 54M74 22C92 22 92 50 68 54" fill="none" stroke="#e2a336" stroke-width="6" stroke-linecap="round"/>
 <path d="M20 12H80V30C80 52 66 66 50 66C34 66 20 52 20 30Z" fill="#ffc53d"/>
@@ -562,10 +562,10 @@ const TROPHY = y => `<svg viewBox="0 0 100 124" aria-hidden="true">
 <text x="50" y="110" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="19" fill="#ffc53d">${y}</text></svg>`;
 const ban = document.getElementById("banners"), pod = document.getElementById("podium");
 const PODIUM = YEARS.map(y => { const s = D.seasons[y], wr = weeklyRanks(y);
-  return { y, champ: s.table.find(r => r.mgr === s.podium[0]), rows: [s.podium[1], s.podium[2], MGRS.find(m => wr.ranks[m][wr.nW - 1] === 1), s.table.find(r => r.rank === s.table.length).mgr] }; });
+  return { y, champ: s.table.find(r => r.mgr === s.podium[0]), rows: [s.podium[1], s.podium[2], MGRS.find(m => wr.ranks[m][wr.nW - 1] === 1)] }; });
 function drawTrophies() {
   ban.innerHTML = PODIUM.map(({ y, champ }) => `<div class="trophy ${champ.mgr === cur ? "me" : ""}">${TROPHY(y)}<span class="who">${esc(DISP(champ.mgr))}</span><span class="tm">${champ.team ? esc(champ.team) : "（空白隊名）"}</span><span class="fr">${rec(champ.cat)}</span></div>`).join("");
-  pod.innerHTML = ["亞軍", "季軍", "例行賽第一", "墊底"].map((label, i) => `<span class="pl">${label}</span>` + PODIUM.map(p => `<span class="pv ${p.rows[i] === cur ? "me" : ""}">${esc(DISP(p.rows[i]))}</span>`).join("")).join("");
+  pod.innerHTML = ["亞軍", "季軍", "例行賽第一"].map((label, i) => `<span class="pl">${label}</span>` + PODIUM.map(p => `<span class="pv ${p.rows[i] === cur ? "me" : ""}">${esc(DISP(p.rows[i]))}</span>`).join("")).join("");
 }
 
 // 三季總表
