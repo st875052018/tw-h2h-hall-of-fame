@@ -28,6 +28,7 @@
   --gold-ink: #4f3422;  /* amber 12 */
   --gold-text: #ab6400; /* amber 11 */
   --bronze: #a18072;    /* bronze 9 */
+  --silver: #b9bbc6;    /* slate 8：亞軍的銀色，深淺色都一樣 */
   --bronze-text: #7d5e54; /* bronze 11 */
   --win: #2a7e3b;       /* grass 11 */
   --loss: #ce2c31;      /* red 11 */
@@ -129,7 +130,8 @@ td.r, th.r { text-align: right; }
 
 .fin { display: inline-grid; place-items: center; width: 30px; height: 26px; font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; color: var(--muted); }
 .fin.f1 { background: var(--gold); color: var(--gold-ink); }
-.fin.f2, .fin.f3 { background: var(--step); color: var(--ink); }
+.fin.f2 { background: var(--silver); color: #1c2024; }
+.fin.f3 { background: var(--bronze); color: #1c2024; }
 .fins { display: flex; gap: 4px; }
 th button { all: unset; cursor: pointer; }
 th button:hover { color: var(--ink); }
@@ -289,7 +291,7 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 #po-table td.pf { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
 #po-table td.pf.out { color: var(--line2); font-weight: 400; }
 #po-table td.pf.p1, #po-table td.pf.p2, #po-table td.pf.p3 { font: 700 var(--fs-s) var(--body); }
-#po-table td.pf.p1 { color: var(--gold-text); } #po-table td.pf.p3 { color: var(--bronze-text); }
+#po-table td.pf.p1 { color: var(--gold-text); } #po-table td.pf.p2 { color: var(--silver); } #po-table td.pf.p3 { color: var(--bronze-text); }
 /* 桌面：5–8 名對戰樹只用兩欄，右邊第三欄放季後賽戰績，欄寬跟上面冠軍組對齊 */
 .po-low { display: grid; gap: 24px; }
 .po-low > div { min-width: 0; }
