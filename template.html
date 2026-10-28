@@ -913,7 +913,7 @@ function tree(y, id, rounds, [top, tl, tc, tm], [bot, bl, bc, bm]) {
   }));
   box.append(Object.assign(el("div", "tag " + (tc === "final" ? "gold" : tc === "third" ? "bronze" : ""), tl), { style: `left:${X(L)}px;top:${yF - 22}px` }));
   put(top, X(L), yF, tc, tm);
-  box.append(Object.assign(el("div", "tag " + (bc === "third" ? "bronze" : ""), bl + `<span class="sub">${L > 1 ? "準決賽輸的兩隊" : "排名賽輸的兩隊"}</span>`), { style: `left:${X(L)}px;top:${yT - 22}px` }));
+  box.append(Object.assign(el("div", "tag " + (bc === "third" ? "bronze" : ""), bl + (L > 1 ? `<span class="sub">準決賽輸的兩隊</span>` : "")), { style: `left:${X(L)}px;top:${yT - 22}px` }));
   put(bot, X(L), yT, bc, bm);
 }
 function drawPlayoffs() {
