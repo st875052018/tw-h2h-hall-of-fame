@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>TW+ H2H 聯盟名人堂</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: 球館天花板掛的冠軍旗幟開場，往下是一季一季的記分板、走勢、交手表、紀錄牆。
+   顏色全部取自 Radix Colors：slate（中性）、ruby（旗幟與選中的經理）、amber（冠軍）、grass / red（勝負）。
+   字級只用四階：13 / 15 / 24 / 顯示級。線條 0.5px。 */
+:root {
+  --bg: #fcfcfd;        /* slate 1 */
+  --panel: #f9f9fb;     /* slate 2 */
+  --hover: #f0f0f3;     /* slate 3 */
+  --step: #e8e8ec;      /* slate 4 */
+  --line: #d9d9e0;      /* slate 6 */
+  --line2: #b9bbc6;     /* slate 8 */
+  --muted: #60646c;     /* slate 11 */
+  --ink: #1c2024;       /* slate 12 */
+  --banner: #ca244d;    /* ruby 11：白字要 4.5:1，9/10 階不夠 */
+  --banner-ink: #fff;
+  --accent: #e54666;    /* ruby 9：選中經理的線 */
+  --accent-text: #ca244d; /* ruby 11 */
+  --gold: #ffc53d;      /* amber 9 */
+  --gold-ink: #4f3422;  /* amber 12 */
+  --gold-text: #ab6400; /* amber 11 */
+  --bronze: #a18072;    /* bronze 9 */
+  --bronze-text: #7d5e54; /* bronze 11 */
+  --win: #2a7e3b;       /* grass 11 */
+  --loss: #ce2c31;      /* red 11 */
+  --heat-w: 70, 167, 88;  /* grass 9 */
+  --heat-l: 229, 72, 77;  /* red 9 */
+  --fs-s: 13px; --fs-m: 15px; --fs-l: 24px; --fs-xl: clamp(32px, 5vw, 48px);
+  --display: "Barlow Condensed", "Noto Sans TC", "Arial Narrow", sans-serif;
+  --body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111113; --panel: #18191b; --hover: #212225; --step: #272a2d; --line: #363a3f; --line2: #5a6169;
+    --muted: #b0b4ba; --ink: #edeef0; --banner: #ca244d; --accent: #e54666; --accent-text: #ff949d;
+    --gold: #ffc53d; --gold-text: #ffca16; --bronze-text: #d4b3a5; --win: #71d083; --loss: #ff9592; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111113; --panel: #18191b; --hover: #212225; --step: #272a2d; --line: #363a3f; --line2: #5a6169;
+  --muted: #b0b4ba; --ink: #edeef0; --banner: #ca244d; --accent: #e54666; --accent-text: #ff949d;
+  --gold: #ffc53d; --gold-text: #ffca16; --bronze-text: #d4b3a5; --win: #71d083; --loss: #ff9592; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: var(--fs-m); line-height: 1.6; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* rafters */
+.head { padding-block: 40px 0; }
+.head h1 { font-weight: 900; font-size: var(--fs-xl); line-height: 1.05; letter-spacing: -.01em; }
+.head p { margin: 8px 0 0; color: var(--muted); }
+.rafters { padding-block: 32px 8px; --cols: 5.5em repeat(3, minmax(0, 1fr)); --gap: clamp(8px, 3vw, 36px); }
+.banners, .podium { display: grid; grid-template-columns: var(--cols); column-gap: var(--gap); }
+.podium { margin-top: 8px; }
+/* 冠軍獎盃：聚光燈打在獎盃上，年份刻在底座 */
+.trophy { display: grid; justify-items: center; text-align: center; gap: 2px; padding: 20px 8px 16px; min-width: 0;
+  background: radial-gradient(circle at 50% 30%, rgba(255, 197, 61, .28), transparent 62%), var(--panel); border: 0.5px solid var(--line); }
+.trophy:first-child { grid-column: 2; }
+.trophy svg { width: clamp(60px, 13vw, 104px); height: auto; display: block; }
+.trophy .who { font-weight: 900; font-size: var(--fs-l); line-height: 1.2; margin-top: 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trophy.me .who { color: var(--accent-text); }
+.trophy .tm { font-size: var(--fs-s); color: var(--muted); overflow-wrap: anywhere; }
+.trophy .fr { font: 600 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; color: var(--muted); }
+.podium > * { padding: 7px 0; border-bottom: 0.5px solid var(--line); font-size: var(--fs-s); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium .pl { color: var(--muted); }
+.podium .pv { text-align: center; font-weight: 700; }
+.podium .pv.me { color: var(--accent-text); }
+/* 開場：不分深淺色都是黑底球館，金色聚光燈打在獎盃上 */
+html, body { overflow-x: clip; }
+.hero { --h-ink: #f4f4f6; --h-mut: #9b9ea8; --h-line: rgba(255, 255, 255, .12); --accent-text: #ff949d;
+  margin-inline: calc(50% - 50vw); padding: 56px max(16px, env(safe-area-inset-left, 0px), calc(50vw - 524px)) 28px; color: var(--h-ink);
+  background: radial-gradient(70% 55% at 50% 0%, rgba(255, 197, 61, .20), transparent 70%), radial-gradient(45% 45% at 100% 100%, rgba(202, 36, 77, .22), transparent 70%), radial-gradient(40% 40% at 0% 100%, rgba(202, 36, 77, .12), transparent 70%), #0d0d10; }
+.hero .head { padding: 0; }
+.hero .eyebrow { display: block; font: 700 var(--fs-s) var(--display); letter-spacing: .28em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.hero h1 { color: #fff; font-size: clamp(40px, 9vw, 76px); line-height: 1; }
+.hero .stats { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 18px; color: var(--h-mut); font-size: var(--fs-s); }
+.hero .stats b { font: 800 var(--fs-l) var(--display); color: var(--h-ink); margin-right: 4px; vertical-align: -2px; }
+.hero .rafters { padding-block: 36px 0; }
+.hero .trophy { border: 0.5px solid var(--h-line); position: relative; overflow: hidden;
+  background: radial-gradient(circle at 50% 28%, rgba(255, 197, 61, .32), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .01)); }
+.hero .trophy::before { content: ""; position: absolute; inset: 0; background: conic-gradient(from 180deg at 50% -10%, transparent 160deg, rgba(255, 220, 140, .14) 180deg, transparent 200deg); pointer-events: none; }
+.hero .trophy svg { filter: drop-shadow(0 6px 18px rgba(255, 186, 24, .35)); }
+.hero .trophy .who { color: #fff; }
+.hero .trophy.me .who { color: var(--accent-text); }
+.hero .trophy .tm, .hero .trophy .fr { color: var(--h-mut); }
+.hero .podium > * { border-bottom-color: var(--h-line); }
+.hero .podium .pl { color: var(--h-mut); }
+.hero .podium .pv { color: var(--h-ink); }
+.hero .podium .pv.me { color: var(--accent-text); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero .trophy { animation: rise .7s cubic-bezier(.2, .7, .2, 1) both; }
+  .hero .trophy:nth-child(2) { animation-delay: .08s; } .hero .trophy:nth-child(3) { animation-delay: .16s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+}
+
+section { margin-top: 64px; display: grid; gap: 16px; }
+.sec-head { border-bottom: 0.5px solid var(--line2); padding-bottom: 8px; }
+.sec-head h2 { font-size: var(--fs-l); font-weight: 900; }
+h3 { font-size: var(--fs-m); font-weight: 700; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 600 var(--fs-m) var(--display); padding: 4px 14px; border: 0.5px solid var(--line2); background: transparent; color: var(--ink); cursor: pointer; }
+.tab:hover { background: var(--hover); }
+.tab[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tab:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font: 500 var(--fs-s) var(--body); color: var(--muted); padding: 8px 10px; border-bottom: 0.5px solid var(--line2); white-space: nowrap; }
+td { padding: 8px 10px; border-bottom: 0.5px solid var(--line); vertical-align: middle; }
+td.r, th.r { text-align: right; }
+.rank { font: 700 var(--fs-l) var(--display); width: 2em; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rank.p1 { color: var(--gold-text); }
+.tname { font-weight: 700; overflow-wrap: anywhere; }
+.tname.blank { color: var(--muted); font-weight: 400; }
+.mgr { color: var(--muted); font-size: var(--fs-s); }
+.cut td { border-bottom: 0.5px dashed var(--line2); }
+.medal { display: inline-block; font-size: var(--fs-s); font-weight: 700; line-height: 1.5; padding: 0 5px; margin-left: 6px; vertical-align: 1px; color: var(--muted); }
+.m1 { background: var(--gold); color: var(--gold-ink); }
+
+.fin { display: inline-grid; place-items: center; width: 30px; height: 26px; font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; color: var(--muted); }
+.fin.f1 { background: var(--gold); color: var(--gold-ink); }
+.fin.f2, .fin.f3 { background: var(--step); color: var(--ink); }
+.fins { display: flex; gap: 4px; }
+th button { all: unset; cursor: pointer; }
+th button:hover { color: var(--ink); }
+th button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+th[aria-sort] button { color: var(--ink); font-weight: 700; }
+
+/* charts */
+.chart { position: relative; }
+.chart svg { display: block; width: 100%; overflow: visible; touch-action: pan-y; }
+.chart text { font: 500 var(--fs-s) var(--body); fill: var(--muted); }
+.chart text.on { fill: var(--ink); font-weight: 700; }
+.chart .ln { fill: none; stroke: var(--line2); stroke-opacity: .55; stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; }
+.chart .ln.on { stroke: var(--accent); stroke-width: 2.5; }
+.chart .ring { fill: none; stroke: var(--bg); stroke-width: 6; stroke-linejoin: round; stroke-linecap: round; }
+.chart .hit { fill: none; stroke: transparent; stroke-width: 12; cursor: pointer; }
+.chart .grid { stroke: var(--line); stroke-width: 0.5; }
+.chart .zero { stroke: var(--line2); stroke-width: 0.5; }
+.chart .cut { stroke: var(--line2); stroke-width: 0.5; stroke-dasharray: 3 3; }
+.chart .band { fill: var(--step); }
+.chart .med { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.chart .xh { stroke: var(--muted); stroke-width: 0.5; }
+.chart .dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+.chart .lab { cursor: pointer; }
+.tip { position: absolute; top: 0; pointer-events: none; background: var(--panel); border: 0.5px solid var(--line2); padding: 6px 10px; font-size: var(--fs-s); line-height: 1.5; white-space: nowrap; z-index: 2; }
+.tip b { font-weight: 700; }
+.tip .w { color: var(--win); } .tip .l { color: var(--loss); }
+.mtip { position: fixed; top: 0; left: 0; }
+.mtip .g { display: grid; grid-template-columns: auto auto auto; gap: 0 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.mtip .po { color: var(--gold-text); }
+
+/* top bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 0.5px solid var(--line); margin-top: 0; }
+.bar-in { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-block: 8px; }
+.bar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.bar a { color: var(--muted); text-decoration: none; font-weight: 500; white-space: nowrap; }
+.bar nav { min-width: 0; flex: 1 1 auto; }
+.who-pick { flex: none; }
+.bar a:hover { color: var(--ink); }
+.bar a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.who-pick { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.who-pick label { color: var(--muted); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+section { scroll-margin-top: 64px; }
+.ch { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.key { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--muted); }
+.key i { display: inline-block; width: 16px; height: 2.5px; background: var(--accent); }
+.key i.g { height: 1.25px; background: var(--line2); }
+.key i.band { height: 10px; background: var(--step); }
+.key i.med { height: 0; background: none; border-top: 1px dashed var(--muted); }
+.key b { color: var(--ink); }
+/* games as squares */
+.games { display: flex; flex-wrap: wrap; gap: 3px; }
+.gm { width: 16px; height: 16px; display: inline-block; }
+.gm.w { background: var(--win); } .gm.l { background: var(--loss); } .gm.t { background: var(--line2); }
+.gm.po { box-shadow: inset 0 0 0 2px var(--gold); }
+/* h2h */
+.h2h-pick { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(--panel); color: var(--ink); border: 0.5px solid var(--line2); }
+.vs-rows { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 0 32px; margin-top: 8px; }
+.vr { display: grid; grid-template-columns: minmax(0, 7em) 3.6em minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--line); }
+.vr .vo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vr .vs-rec { font-size: var(--fs-m); text-align: right; }
+.vr .vc { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; }
+.vr .gm { width: 12px; height: 12px; }
+.vr .games { gap: 2px; flex-wrap: nowrap; }
+.vs { background: var(--panel); border: 0.5px solid var(--line); padding: 12px 14px; display: grid; gap: 6px; min-width: 0; }
+.vs-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.vs-rec { font: 700 var(--fs-l) var(--display); font-variant-numeric: tabular-nums; }
+.vs-rec.up { color: var(--win); } .vs-rec.down { color: var(--loss); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; padding: 0 6px; }
+.chip.w { background: rgba(var(--heat-w), .16); color: var(--win); }
+.chip.l { background: rgba(var(--heat-l), .14); color: var(--loss); }
+.chip.t { background: var(--step); color: var(--muted); }
+.chip.po { box-shadow: inset 0 0 0 1px var(--gold); }
+.legend { font-size: var(--fs-s); color: var(--muted); }
+
+.matrix td, .matrix th { padding: 0; border: 1px solid var(--bg); text-align: center; }
+.matrix th { font: 500 var(--fs-s) var(--body); color: var(--ink); padding: 6px 4px; white-space: nowrap; background: var(--panel); }
+.matrix th.row { text-align: right; padding-right: 8px; position: sticky; left: 0; z-index: 1; }
+.matrix td { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; min-width: 50px; height: 34px; color: var(--ink); cursor: pointer; }
+.matrix td.self { background: var(--panel); color: var(--muted); cursor: default; }
+.matrix td.tot { font-weight: 800; background: var(--panel); cursor: default; }
+.matrix tr.sel th.row, .matrix tr.sel td.tot { color: var(--accent-text); font-weight: 700; }
+.matrix td.none { background: var(--panel); color: var(--muted); cursor: default; }
+/* 手機：14×14 整張塞進螢幕，格子只寫勝場差，上面經理名字直排 */
+.matrix.compact { table-layout: fixed; }
+.matrix.compact th { padding: 4px 0; background: none; vertical-align: bottom; }
+.matrix.compact th.vh span { writing-mode: vertical-rl; display: inline-block; max-height: 5.2em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.1 var(--body); color: var(--muted); }
+.matrix.compact th.vh.cc span { color: var(--accent-text); font-weight: 700; }
+.matrix.compact th.row { width: 5em; position: static; text-align: left; padding: 0 4px 0 0; font: 500 12px var(--body); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+.matrix.compact td { min-width: 0; height: 24px; font-size: 11px; }
+.matrix.compact .tot { display: none; }
+#mx-legend { margin: 0; }
+/* 看誰：最好打、最難打、最拉鋸 */
+.foes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-width: 760px; }
+.foe { background: var(--panel); border: 0.5px solid var(--line); border-top: 2px solid var(--line2); padding: 10px 12px; display: grid; gap: 2px; min-width: 0; align-content: start; }
+.foe.w { border-top-color: var(--win); } .foe.l { border-top-color: var(--loss); }
+.foe .k { font-size: var(--fs-s); color: var(--muted); }
+.foe .k b { font-weight: 700; } .foe.w .k b { color: var(--win); } .foe.l .k b { color: var(--loss); } .foe.t .k b { color: var(--ink); }
+.foe .nm { font-weight: 900; font-size: 18px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foe .rc { font: 800 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
+.foe .rc span { font: 400 var(--fs-s) var(--body); color: var(--muted); margin-left: 6px; }
+.foe .games { gap: 2px; margin-top: 4px; }
+.foe .gm { width: 10px; height: 10px; }
+@media (max-width: 560px) { .foe { padding: 8px; } .foe .rc span { display: block; margin: 0; } }
+.mhead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 16px; }
+
+/* playoffs */
+.bracket-wrap { overflow-x: auto; overflow-y: hidden; }
+.bracket { position: relative; min-width: 600px; }
+#alltime-table td:first-child, #po-table td:first-child { white-space: nowrap; }
+#po-table, #kings { max-width: 760px; }
+/* 手機：對戰樹照畫，卡片縮成「種子 經理 分數」一行 */
+.bracket.compact { min-width: 0; }
+.compact .pr { height: 28px; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 5px; padding-right: 6px; }
+.compact .pr .pn .tn { display: none; }
+.compact .pr .pn .mg { font-size: var(--fs-s); color: inherit; font-weight: inherit; }
+.compact .pr .sc { font-size: var(--fs-s); }
+.bracket.compact .colh b { margin-right: 4px; }
+.bracket svg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.bracket .cn { fill: none; stroke: var(--line2); stroke-width: 1; }
+.bracket .cn.me { stroke: var(--accent); stroke-width: 2; }
+.bracket .colh { position: absolute; top: 0; font-size: var(--fs-s); color: var(--muted); }
+.bracket .colh b { color: var(--ink); font-weight: 700; margin-right: 6px; }
+.bracket .tag { position: absolute; font-size: var(--fs-s); color: var(--muted); }
+.bracket .tag.gold { color: var(--gold-text); font-weight: 700; }
+.pc { position: absolute; background: var(--panel); border: 0.5px solid var(--line); display: grid; }
+.pc.final { border-color: var(--gold); }
+.pr { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; height: 42px; padding-right: 10px; color: var(--muted); }
+.pr .pn .tn, .pr .pn .mg { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
+.pr .pn .mg { font-size: var(--fs-s); font-weight: 400; color: var(--muted); }
+.pr .pn .tn.blank { font-weight: 400; color: var(--muted); }
+.pr + .pr { border-top: 0.5px solid var(--line); }
+.pr .sd { align-self: stretch; display: grid; place-items: center; font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; background: var(--step); color: var(--muted); }
+.pr .pn { min-width: 0; overflow: hidden; }
+.pr .sc { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
+.pr.win { color: var(--ink); font-weight: 700; }
+.pr.win .sd { background: var(--ink); color: var(--bg); }
+.pr.champ .sd { background: var(--gold); color: var(--gold-ink); }
+.pr.bronze .sd { background: var(--bronze); color: #fff; }
+.pc.third { border-color: var(--bronze); }
+.bracket .cn.lose { stroke-dasharray: 3 3; }
+.bracket .tag.bronze { color: var(--bronze-text); font-weight: 700; }
+.bracket .tag .sub { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.compact .tag .sub { display: none; }
+.pr.me .pn .mg { color: var(--accent-text); font-weight: 700; }
+#po-table tr.sel b, #alltime-table tr.sel b, #season-table tr.sel .mgr { color: var(--accent-text); font-weight: 700; }
+/* 手機：段落做成一列可左右滑的分頁，目前段落底線標紅並自動捲到中間；看誰縮成右邊的小選單 */
+.bar a.on { color: var(--ink); font-weight: 700; }
+@media (max-width: 560px) {
+  .bar-in { flex-wrap: nowrap; gap: 0; padding-block: 0; }
+  .bar nav { flex-wrap: nowrap; gap: 0; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .bar nav::-webkit-scrollbar { display: none; }
+  .bar a { padding: 11px 10px 9px; font-size: var(--fs-s); border-bottom: 2px solid transparent; }
+  .bar a:first-child { padding-left: 0; }
+  .bar a.on { border-bottom-color: var(--accent); }
+  .who-pick { margin-left: 0; padding-left: 8px; border-left: 0.5px solid var(--line); }
+  .who-pick label { display: none; }
+  .who-pick select { font-size: var(--fs-s); padding: 3px 4px; max-width: 6.5em; }
+  section { scroll-margin-top: 52px; }
+  .pr { grid-template-columns: 1.2em minmax(0, 1fr) auto; gap: 4px; }
+}
+
+/* records */
+/* 單週類別紀錄：一類一格 */
+.recs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(30%, 160px), 1fr)); gap: 6px; margin-top: 4px; }
+.rt { background: var(--panel); border: 0.5px solid var(--line); padding: 10px 12px; display: grid; min-width: 0; }
+.rt .k { font: 700 var(--fs-s) var(--display); color: var(--muted); letter-spacing: .04em; }
+.rt .v { font: 800 var(--fs-l) var(--display); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.rt .who { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rt .when { font-size: var(--fs-s); color: var(--muted); }
+.rt.me { border-color: var(--accent); } .rt.me .who { color: var(--accent-text); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 24px; margin-top: 16px; }
+.two h3 { margin-bottom: 4px; }
+h3.gap { margin-top: 32px; }
+#kings td { white-space: nowrap; }
+#kings .kv { display: block; font-size: var(--fs-s); color: var(--muted); }
+#kings td.me b { color: var(--accent-text); }
+/* 連勝連敗、懸殊比分：一行一筆 */
+.streaks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+@media (max-width: 560px) { .streaks { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
+.st-h { font-size: var(--fs-s); color: var(--muted); }
+.ln1 { display: grid; grid-template-columns: 2em minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 5px 0; border-bottom: 0.5px solid var(--line); }
+.ln1 .n { font: 800 var(--fs-l)/1.1 var(--display); font-variant-numeric: tabular-nums; text-align: right; }
+.ln1 .n.w { color: var(--win); } .ln1 .n.l { color: var(--loss); }
+.ln1 b, .ln2 b, .ln2 .lo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ln1.me b, .ln2 .me { color: var(--accent-text); }
+.ln1 .when, .ln2 .when { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; }
+.ln2 { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 0.5px solid var(--line); }
+.ln2 .sc { font: 800 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
+.ln2 .lo { color: var(--muted); }
+/* 賽程運氣：每季多贏／少贏幾場，最後一欄平均 */
+.luck { max-width: 560px; margin-top: 8px; }
+#luck th.c { text-align: center; }
+#luck td.hv { text-align: center; padding: 0; height: 32px; width: 18%; border: 2px solid var(--bg); font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; }
+#luck td.av { font: 800 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; text-align: right; }
+#luck td.av.w { color: var(--win); } #luck td.av.l { color: var(--loss); }
+#luck tr.sel b { color: var(--accent-text); font-weight: 700; }
+#luck b { font-weight: 500; }
+.explain { margin: 0; color: var(--muted); font-size: var(--fs-s); max-width: 46em; }
+.explain .w { color: var(--win); } .explain .l { color: var(--loss); }
+.explain .ex { display: block; margin-top: 4px; color: var(--ink); }
+.streak { display: grid; grid-template-columns: 3.2em 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--line); }
+.streak .n { font: 800 var(--fs-l) var(--display); text-align: right; font-variant-numeric: tabular-nums; }
+.streak .n.w { color: var(--win); } .streak .n.l { color: var(--loss); }
+.streak .d { min-width: 0; }
+.streak .when { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; }
+
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 28px; }
+.nm { padding: 10px 0; border-bottom: 0.5px solid var(--line); display: grid; gap: 4px; min-width: 0; }
+.nm ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.nm li { display: grid; grid-template-columns: 3em 1fr; gap: 6px; overflow-wrap: anywhere; }
+.nm li span { font: 600 var(--fs-m) var(--display); color: var(--muted); }
+.nm li i { font-style: normal; color: var(--muted); }
+footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line); font-size: var(--fs-s); color: var(--muted); display: grid; gap: 4px; }
+@media (max-width: 560px) {
+  .trophy { padding: 14px 4px 12px; }
+  .trophy .tm { display: none; }
+  .trophy .who { font-size: var(--fs-m); }
+  .trophy .fr { font-size: var(--fs-s); }
+  .rafters { --cols: 4.6em repeat(3, minmax(0, 1fr)); --gap: 6px; }
+  .hero { padding-top: 40px; }
+  .hero .stats { gap: 2px 16px; }
+  .hide-sm { display: none; }
+  #kings td, #kings th, #luck td, #luck th { padding-inline: 6px; }
+  .vr .gm { width: 10px; height: 10px; }
+  #luck td:first-child { white-space: nowrap; max-width: 6em; overflow: hidden; text-overflow: ellipsis; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="hero">
+  <header class="head">
+    <span class="eyebrow">Yahoo Fantasy NBA · Hall of Fame</span>
+    <h1>TW+ H2H<br>聯盟名人堂</h1>
+    <div class="stats"><span><b class="num">3</b>季</span><span><b class="num">14</b>位經理</span><span><b class="num">12</b>類別 H2H</span><span><b class="num" id="n-games"></b>場對戰</span></div>
+  </header>
+
+  <div class="rafters">
+    <div class="banners" id="banners"></div>
+    <div class="podium" id="podium"></div>
+  </div>
+  </div>
+
+  <div class="bar">
+    <div class="bar-in">
+      <nav aria-label="段落"><a href="#standings">歷季排名</a><a href="#alltime">三季總表</a><a href="#h2h">歷史交手</a><a href="#playoffs">季後賽</a><a href="#advanced">進階</a><a href="#records">紀錄牆</a><a href="#names">隊名</a></nav>
+      <div class="who-pick"><label for="mgr-select">看誰</label><select id="mgr-select"></select></div>
+    </div>
+  </div>
+
+  <section id="standings">
+    <div class="sec-head"><h2>歷季排名</h2></div>
+    <div class="tabs" id="season-tabs" role="group" aria-label="選擇球季"></div>
+    <div class="ch"><h3>例行賽排名走勢</h3><span class="key"><i></i><b class="key-name"></b><i class="g"></i>其他經理</span></div>
+    <div class="chart" id="bump"></div>
+    <div class="scroll"><table id="season-table"></table></div>
+  </section>
+
+  <section id="alltime">
+    <div class="sec-head"><h2>三季總表</h2></div>
+    <div class="ch"><h3>生涯對戰淨勝場</h3><span class="key"><i></i><b class="key-name"></b><i class="band"></i>全聯盟範圍<i class="med"></i>中位數</span></div>
+    <div class="chart" id="career"></div>
+    <div class="scroll"><table id="alltime-table"></table></div>
+  </section>
+
+  <section id="h2h">
+    <div class="sec-head"><h2>歷史交手</h2></div>
+    <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm po"></span>季後賽</span></div>
+    <div class="foes" id="foes"></div>
+    <div class="vs-rows" id="vs-list"></div>
+    <div class="mhead"><h3>全聯盟交手表</h3><div class="tabs" id="matrix-tabs" role="group" aria-label="比賽範圍"></div></div>
+    <div class="scroll"><table class="matrix" id="matrix"></table></div>
+    <p class="legend" id="mx-legend"></p>
+  </section>
+
+  <section id="playoffs">
+    <div class="sec-head"><h2>季後賽</h2></div>
+    <div class="tabs" id="po-tabs" role="group" aria-label="選擇球季"></div>
+    <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
+    <h3>第 5–8 名排名賽</h3>
+    <div class="bracket-wrap"><div class="bracket" id="cons-tree"></div></div>
+    <h3>季後賽戰績</h3>
+    <div class="scroll"><table id="po-table"></table></div>
+  </section>
+
+  <section id="advanced">
+    <div class="sec-head"><h2>進階數據</h2></div>
+    <h3>每季類別王</h3>
+    <div class="scroll"><table id="kings"></table></div>
+    <h3 class="gap">賽程運氣</h3>
+    <p class="explain" id="luck-ex"></p>
+    <div class="scroll luck"><table id="luck"></table></div>
+  </section>
+
+  <section id="records">
+    <div class="sec-head"><h2>紀錄牆</h2></div>
+    <h3>單週類別紀錄</h3>
+    <div class="recs" id="cat-recs"></div>
+    <div class="two">
+      <div><h3>最長連勝 / 連敗</h3><div id="streaks" class="streaks"></div></div>
+      <div><h3>最懸殊的比分</h3><div id="blowouts"></div></div>
+    </div>
+  </section>
+
+  <section id="names">
+    <div class="sec-head"><h2>隊名博物館</h2></div>
+    <div class="names" id="name-list"></div>
+  </section>
+
+  <footer>
+    <div>資料來源：Yahoo Fantasy 聯盟頁面，逐場比分已用各隊賽程頁交叉核對。</div>
+    <div>名次為最終名次，含季後賽與第 5–8 名排名賽；虛線以上進季後賽。排名走勢與例行賽第一依例行賽累計類別勝率。墊底＝最終第 14 名。</div>
+    <div>類別王只算例行賽 7 天的正常週：計數類取每週平均，命中率與助失比用整季加總計算。賽程運氣＝例行賽實際勝場減掉「每週跟其他 13 隊都打一次」換算的應有勝場，和局算半場。</div>
+    <div>單週類別紀錄只算 7 天的正常週，不含全明星週等 14 天長週。</div>
+  </footer>
+</div>
+
+<script>
+const D = __DATA__;
+const YEARS = Object.keys(D.seasons).map(Number).sort();
+const DISP = m => m === "HowardCommissioner" ? "Howard" : m;
+const CATNAME = { "FGM": "投籃命中", "FG%": "命中率", "FT%": "罰球命中率", "3PTM": "三分球", "PTS": "得分", "OREB": "進攻籃板", "REB": "籃板", "AST": "助攻", "ST": "抄截", "BLK": "阻攻", "TO": "失誤（最少）", "A/T": "助失比" };
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const tname = s => s ? `<span class="tname">${esc(s)}</span>` : `<span class="tname blank">（空白隊名）</span>`;
+const season = y => `${y}–${String(y + 1).slice(2)}`;
+const rec = r => `${r[0]}-${r[1]}-${r[2]}`;
+const pct = (w, l, t) => (w + t / 2) / Math.max(w + l + t, 1);
+const fmt = (c, v) => c.includes("%") ? v.toFixed(3).replace(/^0/, "") : c === "A/T" ? v.toFixed(2) : String(Math.round(v));
+const sgn = n => n > 0 ? "+" + n : String(n);
+
+let nGames = 0;
+for (const a in D.h2h) for (const b in D.h2h[a]) nGames += D.h2h[a][b].w + D.h2h[a][b].l + D.h2h[a][b].t;
+document.getElementById("n-games").textContent = nGames / 2;
+
+// 每位經理的逐場紀錄（從 h2h 攤平），走勢圖用
+const MGRS = Object.keys(D.h2h);
+const G = Object.fromEntries(MGRS.map(m => [m, []]));
+for (const a of MGRS) for (const b in D.h2h[a]) for (const g of D.h2h[a][b].games) {
+  const [sa, sb] = g.score.split("-").map(Number);
+  G[a].push({ y: g.season, w: g.week, po: g.playoff, o: b, sa, sb });
+}
+for (const m of MGRS) G[m].sort((p, q) => p.y - q.y || p.w - q.w);
+
+// 冠軍獎盃＋底下的名次表（亞軍、季軍、例行賽第一、墊底），跟著「看誰」標色
+const TROPHY = y => `<svg viewBox="0 0 100 124" aria-hidden="true">
+<path d="M26 22C8 22 8 50 32 54M74 22C92 22 92 50 68 54" fill="none" stroke="#e2a336" stroke-width="6" stroke-linecap="round"/>
+<path d="M20 12H80V30C80 52 66 66 50 66C34 66 20 52 20 30Z" fill="#ffc53d"/>
+<path d="M50 12H80V30C80 52 66 66 50 66Z" fill="#ffba18"/>
+<rect x="17" y="8" width="66" height="7" rx="2" fill="#e2a336"/>
+<path d="M30 21C30 37 34 47 40 54" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>
+<path d="M44 66H56L58 80H42Z" fill="#e2a336"/>
+<rect x="33" y="80" width="34" height="8" rx="1" fill="#ffc53d"/>
+<rect x="23" y="88" width="54" height="30" rx="2" fill="#4f3422"/>
+<text x="50" y="110" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="800" font-size="19" fill="#ffc53d">${y}</text></svg>`;
+const ban = document.getElementById("banners"), pod = document.getElementById("podium");
+const PODIUM = YEARS.map(y => { const s = D.seasons[y], wr = weeklyRanks(y);
+  return { y, champ: s.table.find(r => r.mgr === s.podium[0]), rows: [s.podium[1], s.podium[2], MGRS.find(m => wr.ranks[m][wr.nW - 1] === 1), s.table.find(r => r.rank === s.table.length).mgr] }; });
+function drawTrophies() {
+  ban.innerHTML = PODIUM.map(({ y, champ }) => `<div class="trophy ${champ.mgr === cur ? "me" : ""}">${TROPHY(y)}<span class="who">${esc(DISP(champ.mgr))}</span><span class="tm">${champ.team ? esc(champ.team) : "（空白隊名）"}</span><span class="fr">${rec(champ.cat)}</span></div>`).join("");
+  pod.innerHTML = ["亞軍", "季軍", "例行賽第一", "墊底"].map((label, i) => `<span class="pl">${label}</span>` + PODIUM.map(p => `<span class="pv ${p.rows[i] === cur ? "me" : ""}">${esc(DISP(p.rows[i]))}</span>`).join("")).join("");
+}
+
+// 三季總表
+const tot = Object.fromEntries(MGRS.map(m => {
+  let w = 0, l = 0, t = 0; for (const o in D.h2h[m]) { w += D.h2h[m][o].w; l += D.h2h[m][o].l; t += D.h2h[m][o].t; }
+  const cat = [0, 0, 0]; const fins = {};
+  for (const y of YEARS) { const r = D.seasons[y].table.find(r => r.mgr === m); r.cat.forEach((v, i) => cat[i] += v); fins[y] = r.rank; }
+  const avg = YEARS.reduce((a, y) => a + fins[y], 0) / YEARS.length, lasts = YEARS.filter(y => fins[y] === D.seasons[y].table.length).length;
+  return [m, { w, l, t, cat, fins, avg, lasts, pct: pct(w, l, t), titles: YEARS.filter(y => D.seasons[y].podium[0] === m).length }];
+}));
+const order = [...MGRS].sort((a, b) => pct(tot[b].w, tot[b].l, tot[b].t) - pct(tot[a].w, tot[a].l, tot[a].t));
+const at = document.getElementById("alltime-table");
+// 欄位：[標題, 排序值（大的在前；null 表示不能排）, 欄 class]
+const ATCOLS = [["經理", null, ""], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
+  ["類別", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
+let atSort = 2;
+function drawAlltime() {
+  const key = ATCOLS[atSort][1];
+  const rows = [...MGRS].sort((a, b) => key(b) - key(a) || tot[b].pct - tot[a].pct);
+  at.innerHTML = "";
+  const hr = el("tr");
+  ATCOLS.forEach(([label, k, cls], i) => {
+    const th = el("th", cls);
+    if (k) {
+      const b = el("button", "", label); b.type = "button"; b.onclick = () => { atSort = i; drawAlltime(); };
+      th.append(b); if (i === atSort) th.setAttribute("aria-sort", "descending");
+    } else th.textContent = label;
+    hr.append(th);
+  });
+  at.append(el("thead")); at.tHead.append(hr);
+  const atb = el("tbody");
+  for (const m of rows) {
+    const t = tot[m];
+    const fins = YEARS.map(y => { const i = D.seasons[y].podium.indexOf(m); return `<span class="fin ${i >= 0 ? "f" + (i + 1) : ""}" title="${season(y)}">${t.fins[y]}</span>`; }).join("");
+    atb.append(el("tr", m === cur ? "sel" : "", `<td><b>${esc(DISP(m))}</b>${t.titles ? ` <span class="cups" title="${t.titles} 座冠軍">${"🏆".repeat(t.titles)}</span>` : ""}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td class="r num hide-sm">${t.lasts || "–"}</td><td><div class="fins">${fins}</div></td>`));
+  }
+  at.append(atb);
+}
+
+// 走勢圖共用
+const SVG = "http://www.w3.org/2000/svg";
+const sv = (tag, attrs, parent) => { const e = document.createElementNS(SVG, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.append(e); return e; };
+const svText = (str, attrs, parent) => { const e = sv("text", attrs, parent); e.textContent = str; return e; };
+const pathD = pts => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join("");
+function chartShell(box, H) {
+  box.innerHTML = "";
+  const W = Math.max(box.clientWidth, 300);
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, height: H, role: "img" }, box);
+  const tip = el("div", "tip"); tip.hidden = true; box.append(tip);
+  return { W, svg, tip };
+}
+function placeTip(box, tip, x, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const bw = box.clientWidth, tw = tip.offsetWidth;
+  tip.style.left = Math.min(Math.max(x + 12 + tw > bw ? x - 12 - tw : x + 12, 0), bw - tw) + "px";
+}
+// 線：灰色背景線先畫，選中的經理最後畫在最上層；整條線可點來切換經理
+function drawLines(g, series, cur) {
+  for (const [m, pts] of series) if (m !== cur) {
+    sv("path", { class: "ln", d: pathD(pts) }, g);
+  }
+  const mine = series.find(([m]) => m === cur);
+  if (mine) { sv("path", { class: "ring", d: pathD(mine[1]) }, g); sv("path", { class: "ln on", d: pathD(mine[1]) }, g); }
+  for (const [m, pts] of series) {
+    const h = sv("path", { class: "hit", d: pathD(pts) }, g);
+    h.append(Object.assign(document.createElementNS(SVG, "title"), { textContent: DISP(m) }));
+    h.addEventListener("click", () => showMgr(m));
+  }
+}
+
+let cur = null, curY = null, poReady = false;
+
+// 例行賽排名走勢：每週依累計類別勝率排名（同率比勝場）
+function weeklyRanks(y) {
+  const reg = m => G[m].filter(g => g.y === y && !g.po);
+  const nW = Math.max(...MGRS.map(m => reg(m).length));
+  const cum = Object.fromEntries(MGRS.map(m => [m, [0, 0, 0]]));
+  const ranks = Object.fromEntries(MGRS.map(m => [m, []])), recs = Object.fromEntries(MGRS.map(m => [m, []]));
+  for (let i = 0; i < nW; i++) {
+    for (const m of MGRS) { const g = reg(m)[i]; if (g) { cum[m][0] += g.sa; cum[m][1] += g.sb; cum[m][2] += 12 - g.sa - g.sb; } }
+    const srt = [...MGRS].sort((a, b) => pct(...cum[b]) - pct(...cum[a]) || cum[b][0] - cum[a][0]);
+    srt.forEach((m, r) => { ranks[m].push(r + 1); recs[m].push([...cum[m]]); });
+  }
+  return { nW, ranks, recs, reg };
+}
+function drawBump() {
+  const box = document.getElementById("bump"), y = curY;
+  const { nW, ranks, recs, reg } = weeklyRanks(y);
+  const N = MGRS.length, rowH = 22, padT = 10, padB = 30, padL = 4, padR = 96;
+  const H = padT + (N - 1) * rowH + padB;
+  const { W, svg, tip } = chartShell(box, H);
+  svg.setAttribute("aria-label", `${season(y)} 例行賽每週排名`);
+  const X = i => padL + i * (W - padL - padR) / (nW - 1), Y = r => padT + (r - 1) * rowH;
+  const g = sv("g", {}, svg);
+  sv("line", { class: "cut", x1: padL, x2: W - padR, y1: Y(8.5), y2: Y(8.5) }, g);
+  [...new Set([0, 4, 9, 14, 19].filter(i => i < nW - 3).concat(nW - 1))].forEach(i =>
+    svText(`W${i + 1}`, { x: X(i), y: H - 8, "text-anchor": i === 0 ? "start" : "middle" }, g));
+  const series = MGRS.map(m => [m, ranks[m].map((r, i) => [X(i), Y(r)])]);
+  drawLines(g, series, cur);
+  for (const m of MGRS) {
+    const r = ranks[m][nW - 1];
+    const t = svText(`${r}  ${DISP(m)}`, { x: W - padR + 10, y: Y(r) + 4.5, class: "lab" + (m === cur ? " on" : "") }, g);
+    t.addEventListener("click", () => showMgr(m));
+  }
+  const xh = sv("line", { class: "xh", y1: padT - 6, y2: Y(N) + 6, visibility: "hidden" }, svg);
+  const dot = sv("circle", { class: "dot", r: 4.5, visibility: "hidden" }, svg);
+  const move = ev => {
+    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
+    if (px > W - padR + 4) return leave();
+    const i = Math.max(0, Math.min(nW - 1, Math.round((px - padL) / ((W - padL - padR) / (nW - 1)))));
+    xh.setAttribute("x1", X(i)); xh.setAttribute("x2", X(i)); xh.setAttribute("visibility", "visible");
+    const r = ranks[cur][i], c = recs[cur][i], gm = reg(cur)[i];
+    dot.setAttribute("cx", X(i)); dot.setAttribute("cy", Y(r)); dot.setAttribute("visibility", "visible");
+    const res = gm ? `vs ${esc(DISP(gm.o))} <span class="${gm.sa > gm.sb ? "w" : gm.sa < gm.sb ? "l" : ""}">${gm.sa}-${gm.sb}</span>` : "";
+    placeTip(box, tip, X(i) * bx.width / W, `<b>第 ${i + 1} 週　${esc(DISP(cur))} 第 ${r} 名</b><br>累計 ${rec(c)}　${res}`);
+  };
+  const leave = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
+}
+
+// 生涯對戰淨勝場：三季所有對戰（含季後賽）的累計勝場減敗場
+const OFF = {}; { let o = 0; for (const y of YEARS) { OFF[y] = o; o += Math.max(...MGRS.flatMap(m => G[m].filter(g => g.y === y).map(g => g.w))) + 1; } }
+const SPAN = OFF[YEARS[YEARS.length - 1]] + Math.max(...MGRS.flatMap(m => G[m].filter(g => g.y === YEARS[YEARS.length - 1]).map(g => g.w)));
+const NET = Object.fromEntries(MGRS.map(m => { let n = 0; return [m, G[m].map(g => ({ ...g, x: OFF[g.y] + g.w, n: n += Math.sign(g.sa - g.sb) }))]; }));
+function drawCareer() {
+  const box = document.getElementById("career");
+  const padT = 26, padB = 8, padL = 30, padR = 96, H = 260;
+  const { W, svg, tip } = chartShell(box, H);
+  svg.setAttribute("aria-label", `${DISP(cur)} 三季累計對戰淨勝場與全聯盟範圍`);
+  // 每個時間點每人的累計值（沒比賽的週沿用上一個值，沒進季後賽的人線不會提早斷）
+  const XS = [0, ...new Set(MGRS.flatMap(m => NET[m].map(p => p.x)))].sort((a, b) => a - b);
+  const at = m => { let i = 0, v = 0; return XS.map(x => { while (i < NET[m].length && NET[m][i].x <= x) v = NET[m][i++].n; return v; }); };
+  const V = Object.fromEntries(MGRS.map(m => [m, at(m)]));
+  const cols = XS.map((x, i) => MGRS.map(m => V[m][i]).sort((a, b) => a - b));
+  const mn = cols.map(c => c[0]), mx = cols.map(c => c[c.length - 1]), md = cols.map(c => (c[(c.length - 1) >> 1] + c[c.length >> 1]) / 2);
+  const rankAt = i => 1 + MGRS.filter(m => V[m][i] > V[cur][i]).length;
+  const lo = Math.floor(Math.min(0, ...mn) / 10) * 10, hi = Math.ceil(Math.max(0, ...mx) / 10) * 10;
+  const X = x => padL + x * (W - padL - padR) / SPAN, Y = v => padT + (hi - v) * (H - padT - padB) / (hi - lo);
+  const g = sv("g", {}, svg);
+  sv("path", { class: "band", d: pathD(XS.map((x, i) => [X(x), Y(mx[i])])) + pathD([...XS].reverse().map((x, j) => [X(x), Y(mn[XS.length - 1 - j])])).replace(/^M/, "L") + "Z" }, g);
+  for (let v = lo; v <= hi; v += 10) {
+    sv("line", { class: v === 0 ? "zero" : "grid", x1: padL, x2: W - padR, y1: Y(v), y2: Y(v) }, g);
+    svText(sgn(v), { x: padL - 6, y: Y(v) + 4.5, "text-anchor": "end" }, g);
+  }
+  for (const y of YEARS) {
+    if (OFF[y]) sv("line", { class: "grid", x1: X(OFF[y]), x2: X(OFF[y]), y1: padT - 4, y2: H - padB }, g);
+    svText(season(y), { x: X(OFF[y]) + 6, y: 14 }, g);
+  }
+  sv("path", { class: "med", d: pathD(XS.map((x, i) => [X(x), Y(md[i])])) }, g);
+  const mine = XS.map((x, i) => [X(x), Y(V[cur][i])]);
+  sv("path", { class: "ring", d: pathD(mine) }, g);
+  sv("path", { class: "ln on", d: pathD(mine) }, g);
+  const li = XS.length - 1, lv = V[cur][li];
+  sv("circle", { class: "dot", cx: X(XS[li]), cy: Y(lv), r: 4.5 }, g);
+  svText(`${sgn(lv)}  聯盟第 ${rankAt(li)}`, { x: X(XS[li]) + 10, y: Y(lv) + 4.5, class: "on" }, g);
+  const xh = sv("line", { class: "xh", y1: padT - 4, y2: H - padB, visibility: "hidden" }, svg);
+  const dot = sv("circle", { class: "dot", r: 4.5, visibility: "hidden" }, svg);
+  const move = ev => {
+    const bx = svg.getBoundingClientRect(), px = (ev.clientX - bx.left) * W / bx.width;
+    let i = 0; XS.forEach((x, j) => { if (Math.abs(X(x) - px) < Math.abs(X(XS[i]) - px)) i = j; });
+    const x = XS[i], v = V[cur][i], gm = NET[cur].find(p => p.x === x);
+    xh.setAttribute("x1", X(x)); xh.setAttribute("x2", X(x)); xh.setAttribute("visibility", "visible");
+    dot.setAttribute("cx", X(x)); dot.setAttribute("cy", Y(v)); dot.setAttribute("visibility", "visible");
+    const yr = [...YEARS].reverse().find(y => OFF[y] <= x), wk = x - OFF[yr];
+    let line2 = "沒有比賽";
+    if (gm) { const k = gm.sa > gm.sb ? ["w", "勝"] : gm.sa < gm.sb ? ["l", "敗"] : ["", "和"]; line2 = `vs ${esc(DISP(gm.o))} <span class="${k[0]}">${gm.sa}-${gm.sb} ${k[1]}</span>`; }
+    placeTip(box, tip, X(x) * bx.width / W, `<b>${season(yr)} 第 ${wk} 週${gm && gm.po ? "（季後賽）" : ""}</b><br>${line2}<br>累計 ${sgn(v)}　聯盟第 ${rankAt(i)}　中位數 ${sgn(Math.round(md[i] * 2) / 2)}`);
+  };
+  const leave = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); };
+  svg.addEventListener("pointermove", move); svg.addEventListener("pointerdown", move); svg.addEventListener("pointerleave", leave);
+}
+
+// 歷季排名
+const markSeason = () => stab.querySelectorAll("tbody tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.m === cur));
+const tabs = document.getElementById("season-tabs"), stab = document.getElementById("season-table");
+function showSeason(y) {
+  curY = y;
+  [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === y)));
+  const s = D.seasons[y];
+  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">類別 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
+  const tb = el("tbody");
+  s.table.forEach(r => {
+    const i = s.podium.indexOf(r.mgr);
+    const medal = i === 0 ? `<span class="medal m1">冠軍</span>` : i === 1 ? `<span class="medal">亞軍</span>` : i === 2 ? `<span class="medal">季軍</span>` : "";
+    const tr = el("tr", r.rank === 8 ? "cut" : "", `<td class="rank ${r.rank === 1 ? "p1" : ""}">${r.rank}</td><td>${tname(r.team)}${medal}<div class="mgr">${esc(DISP(r.mgr))}</div></td><td class="r num">${rec(r.cat)}</td><td class="r num hide-sm">${pct(...r.cat).toFixed(3).replace(/^0/, "")}</td>`);
+    tr.dataset.m = r.mgr; tb.append(tr);
+  });
+  stab.append(tb);
+  markSeason();
+  if (cur) drawBump();
+  try { localStorage.setItem("season", y); } catch (e) {}
+}
+YEARS.forEach(y => { const b = el("button", "tab", season(y)); b.dataset.y = y; b.type = "button"; b.onclick = () => showSeason(y); tabs.append(b); });
+
+// 歷史交手
+const sel = document.getElementById("mgr-select");
+order.forEach(m => sel.append(new Option(DISP(m), m)));
+const vsList = document.getElementById("vs-list"), mt = document.getElementById("matrix");
+function showMgr(m) {
+  cur = m; sel.value = m;
+  const t = tot[m];
+  document.getElementById("mgr-total").textContent = `三季對戰 ${t.w}-${t.l}-${t.t}`;
+  document.querySelectorAll(".key-name").forEach(e => { e.textContent = DISP(m); });
+  vsList.innerHTML = "";
+  const opps = Object.keys(D.h2h[m]).sort((a, b) => { const x = D.h2h[m][a], y = D.h2h[m][b]; return (y.w - y.l) - (x.w - x.l) || (y.cw - y.cl) - (x.cw - x.cl); });
+  for (const o of opps) {
+    const r = D.h2h[m][o];
+    const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
+    const dir = r.w > r.l ? "up" : r.w < r.l ? "down" : "";
+    vsList.append(el("div", "vr", `<b class="vo">vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span><span class="games">${chips}</span><span class="vc">類別 <span class="num">${r.cw}-${r.cl}</span></span>`));
+  }
+  if (mt.classList.contains("compact")) drawMatrix();
+  else [...mt.querySelectorAll("tbody tr")].forEach(tr => tr.classList.toggle("sel", tr.dataset.m === m));
+  drawFoes(m);
+  drawTrophies(); drawRecords(); drawBump(); drawCareer(); drawAlltime(); markSeason(); drawAdvanced(); if (poReady) drawPlayoffs();
+  try { localStorage.setItem("mgr", m); } catch (e) {}
+}
+sel.onchange = () => showMgr(sel.value);
+// 交手表每格：滑過（手機點）列出每一場
+const mtip = el("div", "tip mtip"); mtip.hidden = true; document.body.append(mtip);
+let lastPointer = "mouse";
+document.addEventListener("pointerdown", ev => { lastPointer = ev.pointerType; });
+document.addEventListener("click", () => { mtip.hidden = true; });
+window.addEventListener("scroll", () => { if (lastPointer !== "mouse") mtip.hidden = true; }, { passive: true });
+function placeMtip(ev) {
+  const w = mtip.offsetWidth, h = mtip.offsetHeight, vw = document.documentElement.clientWidth, vh = window.innerHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > vw - 8) x = Math.max(8, ev.clientX - 14 - w);
+  if (y + h > vh - 8) y = Math.max(8, ev.clientY - 14 - h);
+  mtip.style.left = x + "px"; mtip.style.top = y + "px";
+}
+function showMtip(a, b, ev) {
+  const r = rv(a, b);
+  const rows = r.games.map(g => {
+    const [x, y] = g.score.split("-").map(Number), k = x > y ? ["w", "勝"] : x < y ? ["l", "敗"] : ["", "和"];
+    return `<span>${season(g.season)} W${g.week}${g.playoff ? ` <span class="po">季後賽</span>` : ""}</span><span class="${k[0]}">${g.score}</span><span class="${k[0]}">${k[1]}</span>`;
+  }).join("");
+  mtip.innerHTML = `<b>${esc(DISP(a))} 對 ${esc(DISP(b))}　${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b><div class="g">${rows}</div>`;
+  mtip.hidden = false; placeMtip(ev);
+}
+// 交手表範圍：全部 / 例行賽 / 季後賽
+const MMODES = [["all", "全部"], ["reg", "例行賽"], ["po", "季後賽"]];
+let mMode = "all";
+const inMode = g => mMode === "all" || (mMode === "po") === g.playoff;
+function rv(a, b) {
+  const games = D.h2h[a][b].games.filter(inMode);
+  let w = 0, l = 0, t = 0;
+  for (const g of games) { const [x, y] = g.score.split("-").map(Number); x > y ? w++ : x < y ? l++ : t++; }
+  return { w, l, t, games };
+}
+const mtabs = document.getElementById("matrix-tabs");
+MMODES.forEach(([k, label]) => { const b = el("button", "tab", label); b.type = "button"; b.dataset.k = k; b.onclick = () => { mMode = k; drawMatrix(); }; mtabs.append(b); });
+// 看誰：最好打（淨勝最多）、最難打（淨輸最多）、最拉鋸（交手最多又最接近）
+function drawFoes(m) {
+  const rs = Object.entries(D.h2h[m]).map(([o, r]) => ({ o, ...r, n: r.w + r.l + r.t, d: r.w - r.l, cd: r.cw - r.cl }));
+  const best = [...rs].sort((p, q) => q.d - p.d || q.cd - p.cd)[0], worst = [...rs].sort((p, q) => p.d - q.d || p.cd - q.cd)[0];
+  const riv = rs.filter(r => Math.abs(r.d) <= 1).sort((p, q) => q.n - p.n || Math.abs(p.cd) - Math.abs(q.cd))[0];
+  const card = (cls, label, r) => r ? `<div class="foe ${cls}"><span class="k"><b>${label}</b></span><span class="nm">${esc(DISP(r.o))}</span><span class="rc">${r.w}-${r.l}${r.t ? "-" + r.t : ""}<span>類別 ${r.cw}-${r.cl}</span></span><span class="games">${r.games.map(g => { const [x, y] = g.score.split("-").map(Number); return `<span class="gm ${x > y ? "w" : x < y ? "l" : "t"} ${g.playoff ? "po" : ""}" title="${season(g.season)} W${g.week} ${g.score}"></span>`; }).join("")}</span></div>` : "";
+  document.getElementById("foes").innerHTML = card("w", "最好打", best) + card("l", "最難打", worst) + card("t", "最拉鋸", riv);
+}
+function drawMatrix() {
+  [...mtabs.children].forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === mMode)));
+  const narrow = mt.parentElement.clientWidth < 600;
+  mt.classList.toggle("compact", narrow);
+  mt.innerHTML = `<thead><tr><th class="row"></th>${order.map(m => narrow ? `<th class="vh ${m === cur ? "cc" : ""}"><span>${esc(DISP(m))}</span></th>` : `<th>${esc(DISP(m))}</th>`).join("")}<th class="tot">總計</th></tr></thead>`;
+  document.getElementById("mx-legend").textContent = narrow ? "格子＝橫列經理對直欄經理的勝場差。點格子看每一場。" : "";
+  const mtb = el("tbody");
+  for (const a of order) {
+    const tr = el("tr"); tr.dataset.m = a;
+    if (a === cur) tr.classList.add("sel");
+    tr.append(el("th", "row", esc(DISP(a))));
+    let tw = 0, tl = 0, tt = 0;
+    for (const b of order) {
+      if (a === b) { tr.append(el("td", "self", narrow ? "" : "—")); continue; }
+      const r = rv(a, b), n = r.w + r.l + r.t, d = (r.w - r.l) / Math.max(n, 1), net = r.w - r.l;
+      tw += r.w; tl += r.l; tt += r.t;
+      if (!n) { tr.append(el("td", "none", "")); continue; }
+      const td = el("td", "", narrow ? (net > 0 ? "+" + net : net < 0 ? "−" + -net : "0") : `${r.w}-${r.l}${r.t ? "-" + r.t : ""}`);
+      td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.12 + d * 0.5})` : d < 0 ? `rgba(var(--heat-l), ${0.12 - d * 0.5})` : "var(--panel)";
+      td.setAttribute("aria-label", `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`);
+      td.addEventListener("pointerenter", ev => { if (ev.pointerType === "mouse") showMtip(a, b, ev); });
+      td.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") placeMtip(ev); });
+      td.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") mtip.hidden = true; });
+      td.addEventListener("click", ev => {
+        // 滑鼠點：切換經理；手指點：顯示這格的每一場
+        if (lastPointer === "mouse") { mtip.hidden = true; showMgr(a); document.getElementById("h2h").scrollIntoView(); }
+        else { showMtip(a, b, ev); ev.stopPropagation(); }
+      });
+      tr.append(td);
+    }
+    tr.append(el("td", "tot", tw + tl + tt ? `${tw}-${tl}-${tt}` : ""));
+    mtb.append(tr);
+  }
+  mt.append(mtb);
+}
+drawMatrix();
+
+let startY = YEARS[YEARS.length - 1];
+try { const v = +localStorage.getItem("season"); if (YEARS.includes(v)) startY = v; } catch (e) {}
+showSeason(startY);
+let startM = order[0];
+try { const v = localStorage.getItem("mgr"); if (v && D.h2h[v]) startM = v; } catch (e) {}
+showMgr(startM);
+let rw = 0;
+new ResizeObserver(() => { const w = document.getElementById("bump").clientWidth; if (w !== rw) { rw = w; drawBump(); drawCareer(); drawMatrix(); if (poReady) drawBracket(); } }).observe(document.querySelector(".wrap"));
+
+// 季後賽：每季三週，依最終名次判斷每一場是哪種比賽；種子＝例行賽最後排名
+const SEED = Object.fromEntries(YEARS.map(y => { const wr = weeklyRanks(y); return [y, Object.fromEntries(MGRS.map(m => [m, wr.ranks[m][wr.nW - 1]]))]; }));
+const FIN = Object.fromEntries(YEARS.map(y => [y, Object.fromEntries(D.seasons[y].table.map(r => [r.mgr, r.rank]))]));
+const PO = Object.fromEntries(YEARS.map(y => {
+  const seen = new Set(), games = [];
+  for (const a of MGRS) for (const b in D.h2h[a]) for (const g of D.h2h[a][b].games) {
+    if (g.season !== y || !g.playoff || seen.has(`${g.week}|${b}|${a}`)) continue;
+    seen.add(`${g.week}|${a}|${b}`);
+    const [sa, sb] = g.score.split("-").map(Number);
+    games.push({ w: g.week, a, b, sa, sb });
+  }
+  const weeks = [...new Set(games.map(g => g.w))].sort((x, z) => x - z);
+  return [y, weeks.map((w, i) => games.filter(g => g.w === w).map(g => {
+    const ra = FIN[y][g.a], rb = FIN[y][g.b], lo = Math.min(ra, rb), hi = Math.max(ra, rb);
+    const label = i === 0 ? "第一輪" : i === 1 ? (hi <= 4 ? "準決賽" : "排名賽") : ({ 1: "冠軍戰", 3: "季軍戰", 5: "第五名", 7: "第七名" })[lo] || "排名賽";
+    // 平手時，最終名次較前的那隊晉級
+    const aWin = g.sa > g.sb || (g.sa === g.sb && ra < rb);
+    return { ...g, i, label, aWin, key: lo };
+  }).sort((p, q) => p.key - q.key))];
+}));
+let poY = YEARS[YEARS.length - 1];
+const potabs = document.getElementById("po-tabs");
+YEARS.forEach(y => { const b = el("button", "tab", season(y)); b.type = "button"; b.dataset.y = y; b.onclick = () => { poY = y; drawBracket(); }; potabs.append(b); });
+const win = g => g.aWin ? g.a : g.b, lose = g => g.aWin ? g.b : g.a;
+function card(y, g, cls = "", medal = "") {
+  const side = (m, s, w) => { const tn = D.names[m][y];
+    return `<div class="pr ${w ? "win" : ""} ${w ? medal : ""} ${m === cur ? "me" : ""}" title="${esc(tn || "（空白隊名）")}（${esc(DISP(m))}）"><span class="sd">${SEED[y][m]}</span><span class="pn"><span class="tn ${tn ? "" : "blank"}">${tn ? esc(tn) : "（空白隊名）"}</span><span class="mg">${esc(DISP(m))}</span></span><span class="sc">${s}</span></div>`; };
+  const [top, bot] = SEED[y][g.a] <= SEED[y][g.b] ? [[g.a, g.sa, g.aWin], [g.b, g.sb, !g.aWin]] : [[g.b, g.sb, !g.aWin], [g.a, g.sa, g.aWin]];
+  const c = el("div", "pc " + cls, side(...top) + side(...bot));
+  return c;
+}
+// 冠軍組：第一輪 → 準決賽 → 冠軍戰；第 5–8 名：第一輪輸的四隊 → 第五名戰。
+// 輸的人往下掉的那條用虛線（準決賽輸 → 季軍戰、排名賽輸 → 第七名戰）
+function drawBracket() {
+  [...potabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === poY)));
+  const y = poY, [r1, r2, r3] = PO[y];
+  const bySeed = (p, q) => Math.min(SEED[y][p.a], SEED[y][p.b]) - Math.min(SEED[y][q.a], SEED[y][q.b]);
+  const semis = r2.filter(g => g.label === "準決賽").sort(bySeed);
+  const feed = m => r1.find(g => g.a === m || g.b === m);
+  const r1o = semis.flatMap(s => [feed(s.a), feed(s.b)].sort(bySeed));
+  const c2 = r2.filter(g => g.label !== "準決賽").sort(bySeed);
+  const pick = l => r3.find(g => g.label === l);
+  tree(y, "bracket", [["第一輪", r1o], ["準決賽", semis]], [pick("冠軍戰"), "冠軍戰", "final", "champ"], [pick("季軍戰"), "季軍戰", "third", "bronze"]);
+  tree(y, "cons-tree", [["排名賽", c2]], [pick("第五名"), "第五名戰", "", ""], [pick("第七名"), "第七名戰", "", ""]);
+}
+function tree(y, id, rounds, [top, tl, tc, tm], [bot, bl, bc, bm]) {
+  const box = document.getElementById(id); box.innerHTML = "";
+  const narrow = box.parentElement.clientWidth < 600;
+  box.classList.toggle("compact", narrow);
+  // 欄寬一律照三欄算，5–8 名那張跟冠軍組上下對齊
+  const W = narrow ? box.parentElement.clientWidth : Math.max(box.parentElement.clientWidth, 600), CH = narrow ? 57 : 85, G = narrow ? 10 : 14, HEAD = 28, CX = narrow ? 16 : 32, colW = (W - 2 * CX) / 3;
+  const X = i => i * (colW + CX), y1 = i => HEAD + i * (CH + G);
+  const ys = [rounds[0][1].map((g, i) => y1(i))];
+  for (let k = 1; k < rounds.length; k++) ys.push(rounds[k][1].map((g, j) => (ys[k - 1][2 * j] + ys[k - 1][2 * j + 1]) / 2));
+  const last = ys[ys.length - 1], L = rounds.length;
+  const yF = (last[0] + last[1]) / 2, yT = yF + CH + 44;
+  const H = Math.max(ys[0][ys[0].length - 1] + CH, yT + CH) + 4;
+  box.style.height = H + "px";
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H }, box);
+  rounds.forEach(([n, gs], i) => box.append(Object.assign(el("div", "colh", `<b>${n}</b>W${gs[0].w}`), { style: `left:${X(i)}px` })));
+  box.append(Object.assign(el("div", "colh", `<b>${L > 1 ? "決賽週" : "名次戰"}</b>W${top.w}`), { style: `left:${X(L)}px` }));
+  const put = (g, x, yy, cls, medal) => { const c = card(y, g, cls, medal); c.style.left = x + "px"; c.style.top = yy + "px"; c.style.width = colW + "px"; box.append(c); };
+  const link = (who, yFrom, yTo, i, lose) => {
+    const x1 = X(i) + colW, x2 = X(i + 1), xm = x1 + CX * (lose ? .7 : .35), a = yFrom + CH / 2 + (lose ? 6 : 0), b = yTo + CH / 2;
+    sv("path", { class: "cn" + (lose ? " lose" : "") + (who === cur ? " me" : ""), d: `M${x1} ${a}H${xm}V${b}H${x2}` }, svg);
+  };
+  rounds.forEach(([, gs], k) => gs.forEach((g, j) => {
+    put(g, X(k), ys[k][j]);
+    if (k < L - 1) link(win(g), ys[k][j], ys[k + 1][j >> 1], k);
+    else { link(win(g), ys[k][j], yF, k); link(lose(g), ys[k][j], yT, k, true); }
+  }));
+  box.append(Object.assign(el("div", "tag " + (tc === "final" ? "gold" : tc === "third" ? "bronze" : ""), tl), { style: `left:${X(L)}px;top:${yF - 22}px` }));
+  put(top, X(L), yF, tc, tm);
+  box.append(Object.assign(el("div", "tag " + (bc === "third" ? "bronze" : ""), bl + `<span class="sub">${L > 1 ? "準決賽輸的兩隊" : "排名賽輸的兩隊"}</span>`), { style: `left:${X(L)}px;top:${yT - 22}px` }));
+  put(bot, X(L), yT, bc, bm);
+}
+function drawPlayoffs() {
+  drawBracket();
+  // 季後賽戰績
+  const rows = MGRS.map(m => {
+    let w = 0, l = 0, t = 0, apps = 0, finals = 0;
+    for (const y of YEARS) {
+      if (FIN[y][m] <= 8) apps++;
+      for (const gs of PO[y]) for (const g of gs) {
+        if (g.a !== m && g.b !== m) continue;
+        const [x, z] = g.a === m ? [g.sa, g.sb] : [g.sb, g.sa];
+        x > z ? w++ : x < z ? l++ : t++;
+        if (g.label === "冠軍戰") finals++;
+      }
+    }
+    return { m, w, l, t, apps, finals, titles: tot[m].titles };
+  }).filter(r => r.apps).sort((p, q) => q.titles - p.titles || q.finals - p.finals || (q.w - q.l) - (p.w - p.l) || q.apps - p.apps);
+  document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th><th class="r">進季後賽</th><th class="r">季後賽戰績</th><th class="r">打進冠軍戰</th></tr></thead><tbody>${rows.map(r =>
+    `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b>${r.titles ? ` <span class="cups" title="${r.titles} 座冠軍">${"🏆".repeat(r.titles)}</span>` : ""}</td><td class="r num">${r.apps} 次</td><td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td><td class="r num">${r.finals || "–"}</td></tr>`).join("")}</tbody>`;
+}
+
+poReady = true; drawPlayoffs();
+
+// 進階數據：每季類別王、賽程運氣（跟著「看誰」標出）
+function sshort(y) { return `<span class="hide-sm">20</span>${String(y).slice(2)}–${String(y + 1).slice(2)}`; }
+function kfmt(c, v) { return c.includes("%") ? v.toFixed(3).replace(/^0/, "") : c === "A/T" ? v.toFixed(2) : v.toFixed(1); }
+function drawAdvanced() {
+  document.getElementById("kings").innerHTML = `<thead><tr><th>類別</th>${YEARS.map(y => `<th>${sshort(y)}</th>`).join("")}<th class="r hide-sm">${esc(DISP(cur))} 拿過</th></tr></thead><tbody>${D.catkings[YEARS[0]].map((_, i) => {
+    const c = D.catkings[YEARS[0]][i].cat;
+    const cells = YEARS.map(y => { const k = D.catkings[y][i], t = k.top[0];
+      return `<td class="${t.mgr === cur ? "me" : ""}" title="第 2 名 ${esc(DISP(k.top[1].mgr))} ${kfmt(c, k.top[1].val)}　最後 ${esc(DISP(k.last.mgr))} ${kfmt(c, k.last.val)}"><b>${esc(DISP(t.mgr))}</b><span class="kv num">${kfmt(c, t.val)}</span></td>`; }).join("");
+    const mine = YEARS.filter(y => D.catkings[y][i].top[0].mgr === cur).length;
+    return `<tr><td><b class="hide-sm">${CATNAME[c]} </b><span class="mgr">${esc(c)}</span></td>${cells}<td class="r num hide-sm">${mine || "–"}</td></tr>`;
+  }).join("")}</tbody>`;
+  const L = Object.fromEntries(YEARS.map(y => [y, Object.fromEntries(D.luck[y].map(r => [r.mgr, r]))]));
+  const sum = m => YEARS.reduce((a, y) => a + (L[y][m]?.diff || 0), 0);
+  const ly = YEARS[YEARS.length - 1], lr = L[ly][cur], ld = lr.diff;
+  const sg = d => (d > 0 ? "+" : "") + d.toFixed(1), cls = d => d > 0.4 ? "w" : d < -0.4 ? "l" : "";
+  document.getElementById("luck-ex").innerHTML = `H2H 每週只碰一隊，抽到強隊就難贏。這裡把每週數據跟<b>全聯盟 13 隊都比一次</b>，算出照實力該贏幾場，再跟實際勝場比：
+    <b class="w">+2</b> 就是多贏 2 場（籤運好），<b class="l">−2</b> 就是少贏 2 場（被賽程坑）。
+    <span class="ex">例：<b>${esc(DISP(cur))}</b> ${season(ly)} 實際 ${lr.w}-${lr.l}${lr.t ? "-" + lr.t : ""}，照實力應有 ${lr.exp} 勝${lr.t ? "（和局算半場）" : ""} →
+    <b class="${cls(ld)}">${sg(ld)}</b>。</span>`;
+  const avg = m => sum(m) / YEARS.length;
+  const M = Math.max(...MGRS.flatMap(m => YEARS.map(y => Math.abs(L[y][m].diff))));
+  const heat = d => d > 0 ? `rgba(var(--heat-w), ${0.1 + d / M * 0.6})` : d < 0 ? `rgba(var(--heat-l), ${0.1 - d / M * 0.6})` : "var(--panel)";
+  document.getElementById("luck").innerHTML = `<thead><tr><th>經理</th>${YEARS.map(y => `<th class="c">${sshort(y)}</th>`).join("")}<th class="r">平均</th></tr></thead><tbody>` +
+    [...MGRS].sort((a, b) => avg(b) - avg(a)).map(m => `<tr class="${m === cur ? "sel" : ""}"><td><b>${esc(DISP(m))}</b></td>${YEARS.map(y => { const d = L[y][m].diff; return `<td class="hv" style="background:${heat(d)}">${sg(d)}</td>`; }).join("")}<td class="av ${cls(avg(m))}">${sg(avg(m))}</td></tr>`).join("") + "</tbody>";
+}
+
+// 紀錄牆（跟著「看誰」標色）
+function drawRecords() {
+  document.getElementById("cat-recs").innerHTML = D.catrecs.map(r => `<div class="rt ${r.mgr === cur ? "me" : ""}" title="${r.team ? esc(r.team) : "（空白隊名）"}"><span class="k">${esc(r.cat)}</span><span class="v">${fmt(r.cat, r.val)}</span><span class="who">${esc(DISP(r.mgr))}</span><span class="when">${season(r.y)} W${r.w}</span></div>`).join("");
+  const st = s => `<div class="ln1 ${s.mgr === cur ? "me" : ""}" title="${s.team ? esc(s.team) : "（空白隊名）"}"><span class="n ${s.kind.toLowerCase()}">${s.len}</span><b>${esc(DISP(s.mgr))}</b><span class="when">${season(s.y)} W${s.from}–${s.to}</span></div>`;
+  document.getElementById("streaks").innerHTML = [["W", "連勝"], ["L", "連敗"]].map(([k, n]) => `<div><div class="st-h">${n}</div>` + D.streaks.filter(s => s.kind === k).slice(0, 4).map(st).join("") + `</div>`).join("");
+  document.getElementById("blowouts").innerHTML = D.blowouts.slice(0, 8).map(g => {
+    const [w, l, sw, sl] = g.sa >= g.sb ? [g.a, g.b, g.sa, g.sb] : [g.b, g.a, g.sb, g.sa];
+    return `<div class="ln2"><b class="${w === cur ? "me" : ""}">${esc(DISP(w))}</b><span class="sc">${sw}-${sl}</span><span class="lo ${l === cur ? "me" : ""}">${esc(DISP(l))}</span><span class="when">${season(g.y)} W${g.w}</span></div>`;
+  }).join("");
+}
+
+// 隊名博物館
+const nl = document.getElementById("name-list");
+for (const m of [...MGRS].sort((a, b) => DISP(a).localeCompare(DISP(b), "zh-Hant"))) {
+  nl.append(el("div", "nm", `<b>${esc(DISP(m))}</b><ol>${YEARS.map(y => `<li><span>${y}</span>${D.names[m][y] ? esc(D.names[m][y]) : "<i>（三個全形空白）</i>"}</li>`).join("")}</ol>`));
+}
+// 導覽列標出目前所在段落
+{
+  const links = [...document.querySelectorAll(".bar nav a")], secs = links.map(a => document.querySelector(a.getAttribute("href")));
+  const spy = () => { const top = document.querySelector(".bar").getBoundingClientRect().bottom + 24;
+    let i = -1; secs.forEach((s, j) => { if (s.getBoundingClientRect().top <= top) i = j; });
+    if (links[i]?.classList.contains("on")) return;
+    links.forEach((a, j) => a.classList.toggle("on", j === i));
+    const nav = links[0].parentElement, a = links[i];
+    if (a && nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: a.offsetLeft - nav.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2, behavior: "smooth" }); };
+  addEventListener("scroll", spy, { passive: true }); spy();
+}
+</script>
+
+</body></html>
