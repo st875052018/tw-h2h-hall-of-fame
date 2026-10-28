@@ -440,7 +440,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
   <div class="hero">
   <header class="head">
     <h1>TW+ H2H 名人堂</h1>
-    <p class="sub">Yahoo Fantasy NBA 12 cat H2H 聯盟，<b class="num">14</b> 位經理打了 <b class="num">3</b> 季、<b class="num" id="n-games"></b> 場對戰。</p>
+    <p class="sub">Yahoo Fantasy NBA 12 CAT H2H 聯盟，<b class="num">14</b> 位經理打了 <b class="num">3</b> 季、<b class="num" id="n-games"></b> 場對戰。</p>
   </header>
 
   <div class="rafters">
@@ -573,14 +573,14 @@ const tot = Object.fromEntries(MGRS.map(m => {
   let w = 0, l = 0, t = 0; for (const o in D.h2h[m]) { w += D.h2h[m][o].w; l += D.h2h[m][o].l; t += D.h2h[m][o].t; }
   const cat = [0, 0, 0]; const fins = {};
   for (const y of YEARS) { const r = D.seasons[y].table.find(r => r.mgr === m); r.cat.forEach((v, i) => cat[i] += v); fins[y] = r.rank; }
-  const avg = YEARS.reduce((a, y) => a + fins[y], 0) / YEARS.length, lasts = YEARS.filter(y => fins[y] === D.seasons[y].table.length).length;
-  return [m, { w, l, t, cat, fins, avg, lasts, pct: pct(w, l, t), titles: YEARS.filter(y => D.seasons[y].podium[0] === m).length }];
+  const avg = YEARS.reduce((a, y) => a + fins[y], 0) / YEARS.length;
+  return [m, { w, l, t, cat, fins, avg, pct: pct(w, l, t), titles: YEARS.filter(y => D.seasons[y].podium[0] === m).length }];
 }));
 const order = [...MGRS].sort((a, b) => pct(tot[b].w, tot[b].l, tot[b].t) - pct(tot[a].w, tot[a].l, tot[a].t));
 const at = document.getElementById("alltime-table");
 // 欄位：[標題, 排序值（大的在前；null 表示不能排）, 欄 class]
 const ATCOLS = [["經理", null, ""], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
-  ["cat 勝率", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
+  ["CAT 勝率", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["歷年名次", null, ""]];
 let atSort = 2;
 function drawAlltime() {
   const key = ATCOLS[atSort][1];
@@ -600,7 +600,7 @@ function drawAlltime() {
   for (const m of rows) {
     const t = tot[m];
     const fins = YEARS.map(y => { const i = D.seasons[y].podium.indexOf(m); return `<span class="fin ${i >= 0 ? "f" + (i + 1) : ""}" title="${season(y)}">${t.fins[y]}</span>`; }).join("");
-    atb.append(el("tr", m === cur ? "sel" : "", `<td><b>${esc(DISP(m))}</b>${t.titles ? ` <span class="cups" title="${t.titles} 座冠軍">${"🏆".repeat(t.titles)}</span>` : ""}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td class="r num hide-sm">${t.lasts || "–"}</td><td><div class="fins">${fins}</div></td>`));
+    atb.append(el("tr", m === cur ? "sel" : "", `<td><b>${esc(DISP(m))}</b>${t.titles ? ` <span class="cups" title="${t.titles} 座冠軍">${"🏆".repeat(t.titles)}</span>` : ""}</td><td class="r num">${t.w}-${t.l}-${t.t}</td><td class="r num hide-sm">${t.pct.toFixed(3).replace(/^0/, "")}</td><td class="r num hide-sm">${rec(t.cat)}</td><td class="r num">${t.avg.toFixed(1)}</td><td><div class="fins">${fins}</div></td>`));
   }
   at.append(atb);
 }
@@ -745,7 +745,7 @@ function showSeason(y) {
   curY = y;
   [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === y)));
   const s = D.seasons[y];
-  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">cat 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
+  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">CAT 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
   const tb = el("tbody");
   s.table.forEach(r => {
     const i = s.podium.indexOf(r.mgr);
@@ -775,7 +775,7 @@ function showMgr(m) {
     const r = D.h2h[m][o];
     const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
     const dir = r.w > r.l ? "up" : r.w < r.l ? "down" : "";
-    vsList.append(el("div", "vr", `<b class="vo">vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span><span class="games">${chips}</span><span class="vc">cat <span class="num">${r.cw}-${r.cl}</span></span>`));
+    vsList.append(el("div", "vr", `<b class="vo">vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span><span class="games">${chips}</span><span class="vc">CAT <span class="num">${r.cw}-${r.cl}</span></span>`));
   }
   if (mt.classList.contains("compact")) drawMatrix();
   else [...mt.querySelectorAll("tbody tr")].forEach(tr => tr.classList.toggle("sel", tr.dataset.m === m));
@@ -800,7 +800,7 @@ function crossHl(td, on) {
   td.parentElement.querySelector("th.row").classList.toggle("hl", on);
   mt.tHead.rows[0].cells[td.cellIndex]?.classList.toggle("hl", on);
 }
-// 點格子：兩人交手明細（桌面置中、手機從下面滑上來）。每場一條 cat 比分條：綠＝左邊經理贏的、灰＝平手、紅＝右邊經理贏的
+// 兩人交手明細：桌面滑鼠移上去顯示，手機點了從下面滑上來
 const NCAT = Object.keys(CATNAME).length;
 const mdlg = el("dialog", "mdlg"); document.body.append(mdlg);
 mdlg.addEventListener("click", ev => { if (ev.target === mdlg) mdlg.close(); });
@@ -816,7 +816,7 @@ function matchHTML(a, b, full) {
   }).join("")}</ol></div>`).join("");
   const scope = mMode === "all" ? "" : `只看${MMODES.find(([k]) => k === mMode)[1]}　`;
   return `<div class="mh"><div class="pair"><b>${esc(DISP(a))}</b><span class="rec ${dir}">${rec}</span><b>${esc(DISP(b))}</b></div>${full ? `<button type="button" class="x" aria-label="關閉">✕</button>` : ""}</div>
-    <p class="meta">${scope}cat 合計 <b class="w">${cw}</b>-<b class="l">${cl}</b>${ct ? `-${ct}` : ""}</p>
+    <p class="meta">${scope}CAT 合計 <b class="w">${cw}</b>-<b class="l">${cl}</b>${ct ? `-${ct}` : ""}</p>
     <div class="body">${body}</div>${full ? `
     <div class="mf"><button type="button" class="tab" data-m="${esc(a)}">看 ${esc(DISP(a))} 的交手</button><button type="button" class="tab" data-m="${esc(b)}">看 ${esc(DISP(b))} 的交手</button></div>` : ""}`;
 }
@@ -844,7 +844,7 @@ function drawFoes(m) {
   const rs = Object.entries(D.h2h[m]).map(([o, r]) => ({ o, ...r, n: r.w + r.l + r.t, d: r.w - r.l, cd: r.cw - r.cl }));
   const best = [...rs].sort((p, q) => q.d - p.d || q.cd - p.cd)[0], worst = [...rs].sort((p, q) => p.d - q.d || p.cd - q.cd)[0];
   const riv = rs.filter(r => Math.abs(r.d) <= 1).sort((p, q) => q.n - p.n || Math.abs(p.cd) - Math.abs(q.cd))[0];
-  const card = (cls, label, r) => r ? `<div class="foe ${cls}"><span class="k"><b>${label}</b></span><span class="nm">${esc(DISP(r.o))}</span><span class="rc">${r.w}-${r.l}${r.t ? "-" + r.t : ""}<span>cat ${r.cw}-${r.cl}</span></span><span class="games">${r.games.map(g => { const [x, y] = g.score.split("-").map(Number); return `<span class="gm ${x > y ? "w" : x < y ? "l" : "t"} ${g.playoff ? "po" : ""}" title="${season(g.season)} W${g.week} ${g.score}"></span>`; }).join("")}</span></div>` : "";
+  const card = (cls, label, r) => r ? `<div class="foe ${cls}"><span class="k"><b>${label}</b></span><span class="nm">${esc(DISP(r.o))}</span><span class="rc">${r.w}-${r.l}${r.t ? "-" + r.t : ""}<span>CAT ${r.cw}-${r.cl}</span></span><span class="games">${r.games.map(g => { const [x, y] = g.score.split("-").map(Number); return `<span class="gm ${x > y ? "w" : x < y ? "l" : "t"} ${g.playoff ? "po" : ""}" title="${season(g.season)} W${g.week} ${g.score}"></span>`; }).join("")}</span></div>` : "";
   document.getElementById("foes").innerHTML = card("w", "最好打", best) + card("l", "最難打", worst) + card("t", "最拉鋸", riv);
 }
 function drawMatrix() {
@@ -852,7 +852,7 @@ function drawMatrix() {
   const narrow = mt.parentElement.clientWidth < 600;
   mt.classList.toggle("compact", narrow);
   mt.innerHTML = `<thead><tr><th class="row"></th>${order.map(m => narrow ? `<th class="vh ${m === cur ? "cc" : ""}"><span>${esc(DISP(m))}</span></th>` : `<th>${esc(DISP(m))}</th>`).join("")}<th class="tot">總計</th></tr></thead>`;
-  document.getElementById("mx-legend").textContent = narrow ? "格子＝橫列經理對直欄經理的勝場差。點格子看每一場。" : "滑鼠移到格子上，看兩人每一場的 cat 比分。";
+  document.getElementById("mx-legend").textContent = narrow ? "格子＝橫列經理對直欄經理的勝場差。點格子看每一場。" : "滑鼠移到格子上，看兩人每一場的 CAT 比分。";
   const mtb = el("tbody");
   for (const a of order) {
     const tr = el("tr"); tr.dataset.m = a;
