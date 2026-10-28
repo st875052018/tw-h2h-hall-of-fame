@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<title>TW+ H2H 聯盟名人堂</title>
+<title>TW+ H2H 名人堂</title>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -81,10 +81,9 @@ html, body { overflow-x: clip; }
   margin-inline: calc(50% - 50vw); padding: 56px max(16px, env(safe-area-inset-left, 0px), calc(50vw - 524px)) 28px; color: var(--h-ink);
   background: radial-gradient(70% 55% at 50% 0%, rgba(255, 197, 61, .20), transparent 70%), radial-gradient(45% 45% at 100% 100%, rgba(202, 36, 77, .22), transparent 70%), radial-gradient(40% 40% at 0% 100%, rgba(202, 36, 77, .12), transparent 70%), #0d0d10; }
 .hero .head { padding: 0; }
-.hero .eyebrow { display: block; font: 700 var(--fs-s) var(--display); letter-spacing: .28em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
 .hero h1 { color: #fff; font-size: clamp(40px, 9vw, 76px); line-height: 1; }
-.hero .stats { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-top: 18px; color: var(--h-mut); font-size: var(--fs-s); }
-.hero .stats b { font: 800 var(--fs-l) var(--display); color: var(--h-ink); margin-right: 4px; vertical-align: -2px; }
+.hero .sub { margin: 18px 0 0; max-width: 34em; color: var(--h-mut); font-size: 18px; line-height: 1.5; }
+.hero .sub b { font: 800 24px var(--display); color: var(--gold); vertical-align: -1px; }
 .hero .rafters { padding-block: 36px 0; }
 .hero .trophy { border: 0.5px solid var(--h-line); position: relative; overflow: hidden;
   background: radial-gradient(circle at 50% 28%, rgba(255, 197, 61, .32), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .01)); }
@@ -184,8 +183,12 @@ section { scroll-margin-top: 64px; }
 /* games as squares */
 .games { display: flex; flex-wrap: wrap; gap: 3px; }
 .gm { width: 16px; height: 16px; display: inline-block; }
-.gm.w { background: var(--win); } .gm.l { background: var(--loss); } .gm.t { background: var(--line2); }
-.gm.po { box-shadow: inset 0 0 0 2px var(--gold); }
+.gm.w { background: rgb(var(--heat-w)); } .gm.l { background: rgb(var(--heat-l)); } .gm.t { background: var(--line2); }
+/* 季後賽：方塊底下一條金線，不蓋在勝敗顏色上 */
+.gm.po { position: relative; }
+.gm.po::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 3px; background: var(--gold); }
+.games:has(.po) { padding-bottom: 5px; }
+.key .gm { vertical-align: -2px; }
 /* h2h */
 .h2h-pick { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
 select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(--panel); color: var(--ink); border: 0.5px solid var(--line2); }
@@ -212,6 +215,7 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 .matrix th { font: 500 var(--fs-s) var(--body); color: var(--ink); padding: 6px 4px; white-space: nowrap; background: var(--panel); }
 .matrix th.row { text-align: right; padding-right: 8px; position: sticky; left: 0; z-index: 1; }
 .matrix td { font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; min-width: 50px; height: 34px; color: var(--ink); cursor: pointer; }
+.matrix td.strong { color: #fff; }
 .matrix td.self { background: var(--panel); color: var(--muted); cursor: default; }
 .matrix td.tot { font-weight: 800; background: var(--panel); cursor: default; }
 .matrix tr.sel th.row, .matrix tr.sel td.tot { color: var(--accent-text); font-weight: 700; }
@@ -244,6 +248,19 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 .bracket { position: relative; min-width: 600px; }
 #alltime-table td:first-child, #po-table td:first-child { white-space: nowrap; }
 #po-table, #kings { max-width: 760px; }
+#po-table th.c, #po-table td.c { text-align: center; padding-inline: 4px; white-space: nowrap; }
+#po-table th.c .hide-sm { display: none; }
+#po-table td.fin { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
+#po-table td.fin.out { color: var(--line2); font-weight: 400; }
+#po-table td.fin.p1, #po-table td.fin.p2, #po-table td.fin.p3 { font: 700 var(--fs-s) var(--body); }
+#po-table td.fin.p1 { color: var(--gold-text); } #po-table td.fin.p3 { color: var(--bronze-text); }
+/* 桌面：5–8 名對戰樹只用兩欄，右邊第三欄放季後賽戰績，欄寬跟上面冠軍組對齊 */
+.po-low { display: grid; gap: 24px; }
+.po-low > div { min-width: 0; }
+@media (min-width: 900px) {
+  .po-low { grid-template-columns: calc((100% - 64px) * 2 / 3 + 32px) minmax(0, 1fr); gap: 0 32px; align-items: start; }
+  .po-low .bracket { min-width: 0; }
+}
 /* 手機：對戰樹照畫，卡片縮成「種子 經理 分數」一行 */
 .bracket.compact { min-width: 0; }
 .compact .pr { height: 28px; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 5px; padding-right: 6px; }
@@ -325,6 +342,10 @@ h3.gap { margin-top: 32px; }
 .ln2 .lo { color: var(--muted); }
 /* 賽程運氣：每季多贏／少贏幾場，最後一欄平均 */
 .luck { max-width: 560px; margin-top: 8px; }
+/* 桌面：類別王、賽程運氣左右並排 */
+.adv { display: grid; gap: 32px; }
+.adv > div { min-width: 0; }
+@media (min-width: 900px) { .adv { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 40px; align-items: start; } }
 #luck th.c { text-align: center; }
 #luck td.hv { text-align: center; padding: 0; height: 32px; width: 18%; border: 2px solid var(--bg); font: 600 var(--fs-s) var(--display); font-variant-numeric: tabular-nums; }
 #luck td.av { font: 800 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; text-align: right; }
@@ -340,12 +361,26 @@ h3.gap { margin-top: 32px; }
 .streak .d { min-width: 0; }
 .streak .when { font-size: var(--fs-s); color: var(--muted); white-space: nowrap; }
 
-.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 28px; }
-.nm { padding: 10px 0; border-bottom: 0.5px solid var(--line); display: grid; gap: 4px; min-width: 0; }
-.nm ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.nm li { display: grid; grid-template-columns: 3em 1fr; gap: 6px; overflow-wrap: anywhere; }
-.nm li span { font: 600 var(--fs-m) var(--display); color: var(--muted); }
-.nm li i { font-style: normal; color: var(--muted); }
+/* 隊名博物館：一列一位經理、一欄一季，沒換名的季數併成一格，換名一眼看得出來 */
+.names { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 4px; margin-inline: -4px; }
+.names col.mg { width: 7.5em; }
+.names th { font: 600 var(--fs-m) var(--display); color: var(--muted); text-align: left; padding: 0 12px; }
+.names th.mg { font: 700 var(--fs-m) var(--body); color: var(--ink); padding: 10px 0; vertical-align: top; }
+.names tr.sel th.mg { color: var(--accent-text); }
+.names td { background: var(--panel); padding: 10px 12px; vertical-align: top; overflow-wrap: anywhere; font-size: var(--fs-m); }
+.names td.keep { background: var(--step); }
+.names td .yr { display: none; }
+.names td.keep .yr { display: inline; margin-left: 8px; font: 600 var(--fs-s) var(--display); color: var(--muted); }
+.names td i { font-style: normal; color: var(--muted); }
+@media (max-width: 560px) {
+  .names, .names tbody, .names tr, .names th, .names td { display: block; }
+  .names { margin: 0; }
+  .names thead { display: none; }
+  .names tr { padding: 8px 0 12px; }
+  .names th.mg { padding: 0 0 6px; }
+  .names td { margin-top: 3px; padding: 8px 10px; }
+  .names td .yr { display: inline; float: right; margin-left: 8px; font: 600 var(--fs-s) var(--display); color: var(--muted); }
+}
 footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line); font-size: var(--fs-s); color: var(--muted); display: grid; gap: 4px; }
 @media (max-width: 560px) {
   .trophy { padding: 14px 4px 12px; }
@@ -354,7 +389,8 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
   .trophy .fr { font-size: var(--fs-s); }
   .rafters { --cols: 4.6em repeat(3, minmax(0, 1fr)); --gap: 6px; }
   .hero { padding-top: 40px; }
-  .hero .stats { gap: 2px 16px; }
+  .hero .sub { font-size: var(--fs-m); }
+  .hero .sub b { font-size: 20px; }
   .hide-sm { display: none; }
   #kings td, #kings th, #luck td, #luck th { padding-inline: 6px; }
   .vr .gm { width: 10px; height: 10px; }
@@ -367,9 +403,8 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 <div class="wrap">
   <div class="hero">
   <header class="head">
-    <span class="eyebrow">Yahoo Fantasy NBA · Hall of Fame</span>
-    <h1>TW+ H2H<br>聯盟名人堂</h1>
-    <div class="stats"><span><b class="num">3</b>季</span><span><b class="num">14</b>位經理</span><span><b class="num">12</b>類別 H2H</span><span><b class="num" id="n-games"></b>場對戰</span></div>
+    <h1>TW+ H2H 名人堂</h1>
+    <p class="sub">Yahoo Fantasy NBA 12 cat H2H 聯盟，<b class="num">14</b> 位經理打了 <b class="num">3</b> 季、<b class="num" id="n-games"></b> 場對戰。</p>
   </header>
 
   <div class="rafters">
@@ -402,7 +437,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 
   <section id="h2h">
     <div class="sec-head"><h2>歷史交手</h2></div>
-    <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm po"></span>季後賽</span></div>
+    <div class="h2h-pick"><b class="key-name"></b><span class="legend" id="mgr-total"></span><span class="key"><span class="gm w"></span>勝 <span class="gm l"></span>敗 <span class="gm t"></span>和 <span class="gm t po"></span>季後賽</span></div>
     <div class="foes" id="foes"></div>
     <div class="vs-rows" id="vs-list"></div>
     <div class="mhead"><h3>全聯盟交手表</h3><div class="tabs" id="matrix-tabs" role="group" aria-label="比賽範圍"></div></div>
@@ -414,19 +449,18 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
     <div class="sec-head"><h2>季後賽</h2></div>
     <div class="tabs" id="po-tabs" role="group" aria-label="選擇球季"></div>
     <div class="bracket-wrap"><div class="bracket" id="bracket"></div></div>
-    <h3>第 5–8 名排名賽</h3>
-    <div class="bracket-wrap"><div class="bracket" id="cons-tree"></div></div>
-    <h3>季後賽戰績</h3>
-    <div class="scroll"><table id="po-table"></table></div>
+    <div class="po-low">
+      <div><h3>第 5–8 名排名賽</h3><div class="bracket-wrap"><div class="bracket" id="cons-tree"></div></div></div>
+      <div><h3>三季季後賽戰績</h3><div class="scroll"><table id="po-table"></table></div></div>
+    </div>
   </section>
 
   <section id="advanced">
     <div class="sec-head"><h2>進階數據</h2></div>
-    <h3>每季類別王</h3>
-    <div class="scroll"><table id="kings"></table></div>
-    <h3 class="gap">賽程運氣</h3>
-    <p class="explain" id="luck-ex"></p>
-    <div class="scroll luck"><table id="luck"></table></div>
+    <div class="adv">
+      <div><h3>每季類別王</h3><div class="scroll"><table id="kings"></table></div></div>
+      <div><h3>賽程運氣</h3><p class="explain" id="luck-ex"></p><div class="scroll luck"><table id="luck"></table></div></div>
+    </div>
   </section>
 
   <section id="records">
@@ -441,7 +475,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 0.5px solid var(--line
 
   <section id="names">
     <div class="sec-head"><h2>隊名博物館</h2></div>
-    <div class="names" id="name-list"></div>
+    <div class="scroll"><table class="names" id="name-list"></table></div>
   </section>
 
   <footer>
@@ -510,7 +544,7 @@ const order = [...MGRS].sort((a, b) => pct(tot[b].w, tot[b].l, tot[b].t) - pct(t
 const at = document.getElementById("alltime-table");
 // 欄位：[標題, 排序值（大的在前；null 表示不能排）, 欄 class]
 const ATCOLS = [["經理", null, ""], ["對戰", m => tot[m].w - tot[m].l, "r"], ["勝率", m => tot[m].pct, "r hide-sm"],
-  ["類別", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
+  ["cat 勝率", m => pct(...tot[m].cat), "r hide-sm"], ["平均名次", m => -tot[m].avg, "r"], ["墊底", m => tot[m].lasts, "r hide-sm"], ["歷年名次", null, ""]];
 let atSort = 2;
 function drawAlltime() {
   const key = ATCOLS[atSort][1];
@@ -566,7 +600,7 @@ function drawLines(g, series, cur) {
   }
 }
 
-let cur = null, curY = null, poReady = false;
+let cur = null, curY = null, poReady = false, namesReady = false;
 
 // 例行賽排名走勢：每週依累計類別勝率排名（同率比勝場）
 function weeklyRanks(y) {
@@ -675,7 +709,7 @@ function showSeason(y) {
   curY = y;
   [...tabs.children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.y === y)));
   const s = D.seasons[y];
-  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">類別 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
+  stab.innerHTML = `<thead><tr><th>名次</th><th>隊名（經理）</th><th class="r">cat 勝-敗-和</th><th class="r hide-sm">勝率</th></tr></thead>`;
   const tb = el("tbody");
   s.table.forEach(r => {
     const i = s.podium.indexOf(r.mgr);
@@ -705,12 +739,12 @@ function showMgr(m) {
     const r = D.h2h[m][o];
     const chips = r.games.map(g => { const [a, b] = g.score.split("-").map(Number); const k = a > b ? "w" : a < b ? "l" : "t"; return `<span class="gm ${k} ${g.playoff ? "po" : ""}" title="${season(g.season)} 第 ${g.week} 週${g.playoff ? "（季後賽）" : ""}　${g.score}"></span>`; }).join("");
     const dir = r.w > r.l ? "up" : r.w < r.l ? "down" : "";
-    vsList.append(el("div", "vr", `<b class="vo">vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span><span class="games">${chips}</span><span class="vc">類別 <span class="num">${r.cw}-${r.cl}</span></span>`));
+    vsList.append(el("div", "vr", `<b class="vo">vs ${esc(DISP(o))}</b><span class="vs-rec ${dir}">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</span><span class="games">${chips}</span><span class="vc">cat <span class="num">${r.cw}-${r.cl}</span></span>`));
   }
   if (mt.classList.contains("compact")) drawMatrix();
   else [...mt.querySelectorAll("tbody tr")].forEach(tr => tr.classList.toggle("sel", tr.dataset.m === m));
   drawFoes(m);
-  drawTrophies(); drawRecords(); drawBump(); drawCareer(); drawAlltime(); markSeason(); drawAdvanced(); if (poReady) drawPlayoffs();
+  drawTrophies(); drawRecords(); if (namesReady) drawNames(); drawBump(); drawCareer(); drawAlltime(); markSeason(); drawAdvanced(); if (poReady) drawPlayoffs();
   try { localStorage.setItem("mgr", m); } catch (e) {}
 }
 sel.onchange = () => showMgr(sel.value);
@@ -753,7 +787,7 @@ function drawFoes(m) {
   const rs = Object.entries(D.h2h[m]).map(([o, r]) => ({ o, ...r, n: r.w + r.l + r.t, d: r.w - r.l, cd: r.cw - r.cl }));
   const best = [...rs].sort((p, q) => q.d - p.d || q.cd - p.cd)[0], worst = [...rs].sort((p, q) => p.d - q.d || p.cd - q.cd)[0];
   const riv = rs.filter(r => Math.abs(r.d) <= 1).sort((p, q) => q.n - p.n || Math.abs(p.cd) - Math.abs(q.cd))[0];
-  const card = (cls, label, r) => r ? `<div class="foe ${cls}"><span class="k"><b>${label}</b></span><span class="nm">${esc(DISP(r.o))}</span><span class="rc">${r.w}-${r.l}${r.t ? "-" + r.t : ""}<span>類別 ${r.cw}-${r.cl}</span></span><span class="games">${r.games.map(g => { const [x, y] = g.score.split("-").map(Number); return `<span class="gm ${x > y ? "w" : x < y ? "l" : "t"} ${g.playoff ? "po" : ""}" title="${season(g.season)} W${g.week} ${g.score}"></span>`; }).join("")}</span></div>` : "";
+  const card = (cls, label, r) => r ? `<div class="foe ${cls}"><span class="k"><b>${label}</b></span><span class="nm">${esc(DISP(r.o))}</span><span class="rc">${r.w}-${r.l}${r.t ? "-" + r.t : ""}<span>cat ${r.cw}-${r.cl}</span></span><span class="games">${r.games.map(g => { const [x, y] = g.score.split("-").map(Number); return `<span class="gm ${x > y ? "w" : x < y ? "l" : "t"} ${g.playoff ? "po" : ""}" title="${season(g.season)} W${g.week} ${g.score}"></span>`; }).join("")}</span></div>` : "";
   document.getElementById("foes").innerHTML = card("w", "最好打", best) + card("l", "最難打", worst) + card("t", "最拉鋸", riv);
 }
 function drawMatrix() {
@@ -774,7 +808,9 @@ function drawMatrix() {
       tw += r.w; tl += r.l; tt += r.t;
       if (!n) { tr.append(el("td", "none", "")); continue; }
       const td = el("td", "", narrow ? (net > 0 ? "+" + net : net < 0 ? "−" + -net : "0") : `${r.w}-${r.l}${r.t ? "-" + r.t : ""}`);
-      td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.12 + d * 0.5})` : d < 0 ? `rgba(var(--heat-l), ${0.12 - d * 0.5})` : "var(--panel)";
+      // 勝率差越大顏色越實；五五波用中性灰，一眼分得出好打、難打、打平
+      td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.3 + d * 0.65})` : d < 0 ? `rgba(var(--heat-l), ${0.3 - d * 0.65})` : "var(--step)";
+      if (Math.abs(d) >= 0.5) td.classList.add("strong");
       td.setAttribute("aria-label", `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`);
       td.addEventListener("pointerenter", ev => { if (ev.pointerType === "mouse") showMtip(a, b, ev); });
       td.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") placeMtip(ev); });
@@ -852,7 +888,9 @@ function tree(y, id, rounds, [top, tl, tc, tm], [bot, bl, bc, bm]) {
   const narrow = box.parentElement.clientWidth < 600;
   box.classList.toggle("compact", narrow);
   // 欄寬一律照三欄算，5–8 名那張跟冠軍組上下對齊
-  const W = narrow ? box.parentElement.clientWidth : Math.max(box.parentElement.clientWidth, 600), CH = narrow ? 57 : 85, G = narrow ? 10 : 14, HEAD = 28, CX = narrow ? 16 : 32, colW = (W - 2 * CX) / 3;
+  // 5–8 名在桌面跟季後賽戰績並排，欄寬改照冠軍組那張算
+  const full = id === "cons-tree" && !narrow ? document.getElementById("bracket").parentElement.clientWidth : box.parentElement.clientWidth;
+  const W = narrow ? full : Math.max(full, 600), CH = narrow ? 57 : 85, G = narrow ? 10 : 14, HEAD = 28, CX = narrow ? 16 : 32, colW = (W - 2 * CX) / 3;
   const X = i => i * (colW + CX), y1 = i => HEAD + i * (CH + G);
   const ys = [rounds[0][1].map((g, i) => y1(i))];
   for (let k = 1; k < rounds.length; k++) ys.push(rounds[k][1].map((g, j) => (ys[k - 1][2 * j] + ys[k - 1][2 * j + 1]) / 2));
@@ -860,7 +898,7 @@ function tree(y, id, rounds, [top, tl, tc, tm], [bot, bl, bc, bm]) {
   const yF = (last[0] + last[1]) / 2, yT = yF + CH + 44;
   const H = Math.max(ys[0][ys[0].length - 1] + CH, yT + CH) + 4;
   box.style.height = H + "px";
-  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, width: W, height: H }, box);
+  const SW = X(L) + colW, svg = sv("svg", { viewBox: `0 0 ${SW} ${H}`, width: SW, height: H }, box);
   rounds.forEach(([n, gs], i) => box.append(Object.assign(el("div", "colh", `<b>${n}</b>W${gs[0].w}`), { style: `left:${X(i)}px` })));
   box.append(Object.assign(el("div", "colh", `<b>${L > 1 ? "決賽週" : "名次戰"}</b>W${top.w}`), { style: `left:${X(L)}px` }));
   const put = (g, x, yy, cls, medal) => { const c = card(y, g, cls, medal); c.style.left = x + "px"; c.style.top = yy + "px"; c.style.width = colW + "px"; box.append(c); };
@@ -894,8 +932,10 @@ function drawPlayoffs() {
     }
     return { m, w, l, t, apps, finals, titles: tot[m].titles };
   }).filter(r => r.apps).sort((p, q) => q.titles - p.titles || q.finals - p.finals || (q.w - q.l) - (p.w - p.l) || q.apps - p.apps);
-  document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th><th class="r">進季後賽</th><th class="r">季後賽戰績</th><th class="r">打進冠軍戰</th></tr></thead><tbody>${rows.map(r =>
-    `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b>${r.titles ? ` <span class="cups" title="${r.titles} 座冠軍">${"🏆".repeat(r.titles)}</span>` : ""}</td><td class="r num">${r.apps} 次</td><td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td><td class="r num">${r.finals || "–"}</td></tr>`).join("")}</tbody>`;
+  // 每季一欄寫最終名次（前三名寫冠亞季軍），沒進季後賽寫 –，最後一欄季後賽總戰績
+  const fin = (y, m) => { const k = FIN[y][m]; return k > 8 ? `<td class="c fin out">–</td>` : `<td class="c fin p${k}">${["", "冠軍", "亞軍", "季軍"][k] || k}</td>`; };
+  document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th>${YEARS.map(y => `<th class="c">${sshort(y)}</th>`).join("")}<th class="r">戰績</th></tr></thead><tbody>${rows.map(r =>
+    `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b></td>${YEARS.map(y => fin(y, r.m)).join("")}<td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td></tr>`).join("")}</tbody>`;
 }
 
 poReady = true; drawPlayoffs();
@@ -904,12 +944,11 @@ poReady = true; drawPlayoffs();
 function sshort(y) { return `<span class="hide-sm">20</span>${String(y).slice(2)}–${String(y + 1).slice(2)}`; }
 function kfmt(c, v) { return c.includes("%") ? v.toFixed(3).replace(/^0/, "") : c === "A/T" ? v.toFixed(2) : v.toFixed(1); }
 function drawAdvanced() {
-  document.getElementById("kings").innerHTML = `<thead><tr><th>類別</th>${YEARS.map(y => `<th>${sshort(y)}</th>`).join("")}<th class="r hide-sm">${esc(DISP(cur))} 拿過</th></tr></thead><tbody>${D.catkings[YEARS[0]].map((_, i) => {
+  document.getElementById("kings").innerHTML = `<thead><tr><th>類別</th>${YEARS.map(y => `<th>${sshort(y)}</th>`).join("")}</tr></thead><tbody>${D.catkings[YEARS[0]].map((_, i) => {
     const c = D.catkings[YEARS[0]][i].cat;
     const cells = YEARS.map(y => { const k = D.catkings[y][i], t = k.top[0];
       return `<td class="${t.mgr === cur ? "me" : ""}" title="第 2 名 ${esc(DISP(k.top[1].mgr))} ${kfmt(c, k.top[1].val)}　最後 ${esc(DISP(k.last.mgr))} ${kfmt(c, k.last.val)}"><b>${esc(DISP(t.mgr))}</b><span class="kv num">${kfmt(c, t.val)}</span></td>`; }).join("");
-    const mine = YEARS.filter(y => D.catkings[y][i].top[0].mgr === cur).length;
-    return `<tr><td><b class="hide-sm">${CATNAME[c]} </b><span class="mgr">${esc(c)}</span></td>${cells}<td class="r num hide-sm">${mine || "–"}</td></tr>`;
+    return `<tr><td><b class="hide-sm">${CATNAME[c]} </b><span class="mgr">${esc(c)}</span></td>${cells}</tr>`;
   }).join("")}</tbody>`;
   const L = Object.fromEntries(YEARS.map(y => [y, Object.fromEntries(D.luck[y].map(r => [r.mgr, r]))]));
   const sum = m => YEARS.reduce((a, y) => a + (L[y][m]?.diff || 0), 0);
@@ -938,10 +977,17 @@ function drawRecords() {
 }
 
 // 隊名博物館
-const nl = document.getElementById("name-list");
-for (const m of [...MGRS].sort((a, b) => DISP(a).localeCompare(DISP(b), "zh-Hant"))) {
-  nl.append(el("div", "nm", `<b>${esc(DISP(m))}</b><ol>${YEARS.map(y => `<li><span>${y}</span>${D.names[m][y] ? esc(D.names[m][y]) : "<i>（三個全形空白）</i>"}</li>`).join("")}</ol>`));
+// 連續同名的季數併成一段：[[名字, 起季, 迄季], ...]
+const nameRuns = m => YEARS.reduce((rs, y) => { const n = D.names[m][y] || "", r = rs[rs.length - 1];
+  if (r && r[0] === n) r[2] = y; else rs.push([n, y, y]); return rs; }, []);
+function drawNames() {
+  const rows = [...MGRS].map(m => ({ m, runs: nameRuns(m) })).sort((p, q) => q.runs.length - p.runs.length || DISP(p.m).localeCompare(DISP(q.m), "zh-Hant"));
+  document.getElementById("name-list").innerHTML = `<colgroup><col class="mg">${YEARS.map(() => "<col>").join("")}</colgroup>
+    <thead><tr><th class="mg"></th>${YEARS.map(y => `<th>${season(y)}</th>`).join("")}</tr></thead><tbody>${rows.map(({ m, runs }) =>
+    `<tr class="${m === cur ? "sel" : ""}"><th class="mg" scope="row">${esc(DISP(m))}</th>${runs.map(([n, a, b]) =>
+      `<td colspan="${b - a + 1}" class="${b > a ? "keep" : ""}">${n ? esc(n) : "<i>（三個全形空白）</i>"}<span class="yr">${a === b ? season(a) : a === YEARS[0] && b === YEARS[YEARS.length - 1] ? "三季都沒換" : `${season(a)} 到 ${season(b)}`}</span></td>`).join("")}</tr>`).join("")}</tbody>`;
 }
+namesReady = true; drawNames();
 // 導覽列標出目前所在段落
 {
   const links = [...document.querySelectorAll(".bar nav a")], secs = links.map(a => document.querySelector(a.getAttribute("href")));
