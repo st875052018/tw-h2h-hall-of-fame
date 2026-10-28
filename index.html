@@ -157,8 +157,47 @@ th[aria-sort] button { color: var(--ink); font-weight: 700; }
 .tip b { font-weight: 700; }
 .tip .w { color: var(--win); } .tip .l { color: var(--loss); }
 .mtip { position: fixed; top: 0; left: 0; }
-.mtip .g { display: grid; grid-template-columns: auto auto auto; gap: 0 12px; margin-top: 4px; font-variant-numeric: tabular-nums; }
 .mtip .po { color: var(--gold-text); }
+.mtip .hint { display: block; color: var(--muted); }
+.matrix th.hl { color: var(--accent-text); }
+.matrix td:not(.self):not(.none):not(.tot):hover, .matrix td:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+/* 交手明細 */
+.mdlg { width: min(460px, calc(100vw - 32px)); max-height: min(82vh, 680px); padding: 0; border: 0.5px solid var(--line2); background: var(--panel); color: var(--ink); box-shadow: 0 16px 48px rgba(0, 0, 0, .45); }
+.mdlg[open] { display: flex; flex-direction: column; }
+.mdlg::backdrop { background: rgba(0, 0, 0, .6); }
+.mdlg .mh { display: flex; align-items: center; gap: 8px; padding: 16px 8px 4px 16px; }
+.mdlg .pair { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; min-width: 0; }
+.mdlg .pair b { font-size: 18px; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mdlg .pair b:first-child { text-align: right; }
+.mdlg .rec { font: 800 36px/1 var(--display); font-variant-numeric: tabular-nums; }
+.mdlg .rec.w { color: var(--win); } .mdlg .rec.l { color: var(--loss); }
+.mdlg .x { all: unset; cursor: pointer; width: 44px; height: 44px; display: grid; place-items: center; font-size: 18px; color: var(--muted); }
+.mdlg .x:hover { color: var(--ink); } .mdlg .x:focus-visible { outline: 2px solid var(--accent); }
+.mdlg .meta { margin: 0; padding: 4px 16px 12px; font-size: var(--fs-s); color: var(--muted); text-align: center; }
+.mdlg .meta b { font: 700 var(--fs-m) var(--display); } .mdlg .meta b.w { color: var(--win); } .mdlg .meta b.l { color: var(--loss); }
+.mdlg .meta .key { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; }
+.mdlg .meta .key i { width: 10px; height: 10px; } .mdlg .meta .key i.l { margin-left: 6px; }
+.mdlg i.w { background: rgb(var(--heat-w)); } .mdlg i.l { background: rgb(var(--heat-l)); } .mdlg i.t { background: var(--line2); }
+.mdlg .body { overflow-y: auto; padding: 0 16px 8px; overscroll-behavior: contain; }
+.mdlg h4 { margin: 12px 0 4px; font: 700 var(--fs-s) var(--display); color: var(--muted); }
+.mdlg ol { list-style: none; margin: 0; padding: 0; }
+.mdlg li { display: grid; grid-template-columns: 6.2em minmax(0, 1fr) 3em 1.5em; align-items: center; gap: 10px; padding: 6px 0; }
+.mdlg .wk { font: 600 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mdlg .wk .po { margin-left: 6px; font: 700 12px var(--body); color: var(--gold-text); }
+.mdlg .bar { display: flex; height: 14px; gap: 2px; }
+.mdlg .bar i { display: block; }
+.mdlg .sc { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; text-align: right; }
+.mdlg .res { font-size: var(--fs-s); font-weight: 700; text-align: center; }
+.mdlg .w:is(.sc, .res) { color: var(--win); } .mdlg .l:is(.sc, .res) { color: var(--loss); } .mdlg .t:is(.sc, .res) { color: var(--muted); }
+.mdlg .mf { display: flex; gap: 8px; padding: 12px 16px 16px; }
+.mdlg .mf .tab { flex: 1; min-height: 44px; font-family: var(--body); font-size: var(--fs-s); }
+@media (max-width: 560px) {
+  .mdlg { width: 100%; max-width: 100%; margin: auto 0 0; max-height: 85vh; border-width: 0.5px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .mdlg li { grid-template-columns: 5.6em minmax(0, 1fr) 2.8em 1.4em; gap: 8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mdlg[open] { animation: rise .22s cubic-bezier(.2, .7, .2, 1); }
+}
 
 /* top bar */
 .bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 0.5px solid var(--line); margin-top: 0; }
@@ -763,12 +802,36 @@ function placeMtip(ev) {
 }
 function showMtip(a, b, ev) {
   const r = rv(a, b);
-  const rows = r.games.map(g => {
-    const [x, y] = g.score.split("-").map(Number), k = x > y ? ["w", "勝"] : x < y ? ["l", "敗"] : ["", "和"];
-    return `<span>${season(g.season)} W${g.week}${g.playoff ? ` <span class="po">季後賽</span>` : ""}</span><span class="${k[0]}">${g.score}</span><span class="${k[0]}">${k[1]}</span>`;
-  }).join("");
-  mtip.innerHTML = `<b>${esc(DISP(a))} 對 ${esc(DISP(b))}　${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b><div class="g">${rows}</div>`;
+  mtip.innerHTML = `<b>${esc(DISP(a))} 對 ${esc(DISP(b))}　${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b><span class="hint">點一下看每一場</span>`;
   mtip.hidden = false; placeMtip(ev);
+}
+// 滑過格子：標出它的橫列、直欄經理
+function crossHl(td, on) {
+  td.parentElement.querySelector("th.row").classList.toggle("hl", on);
+  mt.tHead.rows[0].cells[td.cellIndex]?.classList.toggle("hl", on);
+}
+// 點格子：兩人交手明細（桌面置中、手機從下面滑上來）。每場一條 cat 比分條：綠＝左邊經理贏的、灰＝平手、紅＝右邊經理贏的
+const NCAT = Object.keys(CATNAME).length;
+const mdlg = el("dialog", "mdlg"); document.body.append(mdlg);
+mdlg.addEventListener("click", ev => { if (ev.target === mdlg) mdlg.close(); });
+function openMatch(a, b) {
+  const r = rv(a, b), rec = `${r.w}-${r.l}${r.t ? "-" + r.t : ""}`, dir = r.w > r.l ? "w" : r.w < r.l ? "l" : "";
+  let cw = 0, cl = 0, ct = 0;
+  const bySeason = YEARS.map(y => [y, r.games.filter(g => g.season === y)]).filter(([, gs]) => gs.length);
+  const body = bySeason.map(([y, gs]) => `<h4>${season(y)}</h4><ol>${gs.map(g => {
+    const [x, z] = g.score.split("-").map(Number), t = NCAT - x - z, k = x > z ? ["w", "勝"] : x < z ? ["l", "敗"] : ["t", "和"];
+    cw += x; cl += z; ct += t;
+    return `<li><span class="wk">W${g.week}${g.playoff ? `<span class="po">季後賽</span>` : ""}</span><span class="bar" aria-hidden="true"><i class="w" style="flex:${x}"></i><i class="t" style="flex:${t}"></i><i class="l" style="flex:${z}"></i></span><span class="sc ${k[0]}">${g.score}</span><span class="res ${k[0]}">${k[1]}</span></li>`;
+  }).join("")}</ol>`).join("");
+  const scope = mMode === "all" ? "" : `只看${MMODES.find(([k]) => k === mMode)[1]}　`;
+  mdlg.innerHTML = `<div class="mh"><div class="pair"><b>${esc(DISP(a))}</b><span class="rec ${dir}">${rec}</span><b>${esc(DISP(b))}</b></div><button type="button" class="x" aria-label="關閉">✕</button></div>
+    <p class="meta">${scope}cat 合計 <b class="w">${cw}</b>-<b class="l">${cl}</b>${ct ? `-${ct}` : ""}　<span class="key"><i class="w"></i>${esc(DISP(a))} 贏的 cat <i class="l"></i>${esc(DISP(b))} 贏的</span></p>
+    <div class="body">${body}</div>
+    <div class="mf"><button type="button" class="tab" data-m="${esc(a)}">看 ${esc(DISP(a))} 的交手</button><button type="button" class="tab" data-m="${esc(b)}">看 ${esc(DISP(b))} 的交手</button></div>`;
+  mdlg.querySelector(".x").onclick = () => mdlg.close();
+  mdlg.querySelectorAll(".mf button").forEach(btn => btn.onclick = () => { mdlg.close(); showMgr(btn.dataset.m); document.getElementById("h2h").scrollIntoView(); });
+  mdlg.showModal();
+  mdlg.querySelector(".body").scrollTop = 0;
 }
 // 交手表範圍：全部 / 例行賽 / 季後賽
 const MMODES = [["all", "全部"], ["reg", "例行賽"], ["po", "季後賽"]];
@@ -795,7 +858,7 @@ function drawMatrix() {
   const narrow = mt.parentElement.clientWidth < 600;
   mt.classList.toggle("compact", narrow);
   mt.innerHTML = `<thead><tr><th class="row"></th>${order.map(m => narrow ? `<th class="vh ${m === cur ? "cc" : ""}"><span>${esc(DISP(m))}</span></th>` : `<th>${esc(DISP(m))}</th>`).join("")}<th class="tot">總計</th></tr></thead>`;
-  document.getElementById("mx-legend").textContent = narrow ? "格子＝橫列經理對直欄經理的勝場差。點格子看每一場。" : "";
+  document.getElementById("mx-legend").textContent = narrow ? "格子＝橫列經理對直欄經理的勝場差。點格子看每一場。" : "點格子看兩人每一場的 cat 比分。";
   const mtb = el("tbody");
   for (const a of order) {
     const tr = el("tr"); tr.dataset.m = a;
@@ -812,14 +875,12 @@ function drawMatrix() {
       td.style.background = d > 0 ? `rgba(var(--heat-w), ${0.3 + d * 0.65})` : d < 0 ? `rgba(var(--heat-l), ${0.3 - d * 0.65})` : "var(--step)";
       if (Math.abs(d) >= 0.5) td.classList.add("strong");
       td.setAttribute("aria-label", `${DISP(a)} 對 ${DISP(b)}：${r.w} 勝 ${r.l} 敗 ${r.t} 和`);
-      td.addEventListener("pointerenter", ev => { if (ev.pointerType === "mouse") showMtip(a, b, ev); });
+      td.addEventListener("pointerenter", ev => { crossHl(td, true); if (ev.pointerType === "mouse") showMtip(a, b, ev); });
       td.addEventListener("pointermove", ev => { if (ev.pointerType === "mouse") placeMtip(ev); });
-      td.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") mtip.hidden = true; });
-      td.addEventListener("click", ev => {
-        // 滑鼠點：切換經理；手指點：顯示這格的每一場
-        if (lastPointer === "mouse") { mtip.hidden = true; showMgr(a); document.getElementById("h2h").scrollIntoView(); }
-        else { showMtip(a, b, ev); ev.stopPropagation(); }
-      });
+      td.addEventListener("pointerleave", () => { crossHl(td, false); mtip.hidden = true; });
+      td.addEventListener("click", ev => { mtip.hidden = true; ev.stopPropagation(); openMatch(a, b); });
+      td.tabIndex = 0;
+      td.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openMatch(a, b); } });
       tr.append(td);
     }
     tr.append(el("td", "tot", tw + tl + tt ? `${tw}-${tl}-${tt}` : ""));
@@ -913,7 +974,7 @@ function tree(y, id, rounds, [top, tl, tc, tm], [bot, bl, bc, bm]) {
   }));
   box.append(Object.assign(el("div", "tag " + (tc === "final" ? "gold" : tc === "third" ? "bronze" : ""), tl), { style: `left:${X(L)}px;top:${yF - 22}px` }));
   put(top, X(L), yF, tc, tm);
-  box.append(Object.assign(el("div", "tag " + (bc === "third" ? "bronze" : ""), bl + (L > 1 ? `<span class="sub">準決賽輸的兩隊</span>` : "")), { style: `left:${X(L)}px;top:${yT - 22}px` }));
+  box.append(Object.assign(el("div", "tag " + (bc === "third" ? "bronze" : ""), bl), { style: `left:${X(L)}px;top:${yT - 22}px` }));
   put(bot, X(L), yT, bc, bm);
 }
 function drawPlayoffs() {
