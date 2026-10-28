@@ -250,10 +250,10 @@ select { font: 700 var(--fs-m) var(--body); padding: 4px 10px; background: var(-
 #po-table, #kings { max-width: 760px; }
 #po-table th.c, #po-table td.c { text-align: center; padding-inline: 4px; white-space: nowrap; }
 #po-table th.c .hide-sm { display: none; }
-#po-table td.fin { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
-#po-table td.fin.out { color: var(--line2); font-weight: 400; }
-#po-table td.fin.p1, #po-table td.fin.p2, #po-table td.fin.p3 { font: 700 var(--fs-s) var(--body); }
-#po-table td.fin.p1 { color: var(--gold-text); } #po-table td.fin.p3 { color: var(--bronze-text); }
+#po-table td.pf { font: 700 var(--fs-m) var(--display); font-variant-numeric: tabular-nums; }
+#po-table td.pf.out { color: var(--line2); font-weight: 400; }
+#po-table td.pf.p1, #po-table td.pf.p2, #po-table td.pf.p3 { font: 700 var(--fs-s) var(--body); }
+#po-table td.pf.p1 { color: var(--gold-text); } #po-table td.pf.p3 { color: var(--bronze-text); }
 /* 桌面：5–8 名對戰樹只用兩欄，右邊第三欄放季後賽戰績，欄寬跟上面冠軍組對齊 */
 .po-low { display: grid; gap: 24px; }
 .po-low > div { min-width: 0; }
@@ -933,7 +933,7 @@ function drawPlayoffs() {
     return { m, w, l, t, apps, finals, titles: tot[m].titles };
   }).filter(r => r.apps).sort((p, q) => q.titles - p.titles || q.finals - p.finals || (q.w - q.l) - (p.w - p.l) || q.apps - p.apps);
   // 每季一欄寫最終名次（前三名寫冠亞季軍），沒進季後賽寫 –，最後一欄季後賽總戰績
-  const fin = (y, m) => { const k = FIN[y][m]; return k > 8 ? `<td class="c fin out">–</td>` : `<td class="c fin p${k}">${["", "冠軍", "亞軍", "季軍"][k] || k}</td>`; };
+  const fin = (y, m) => { const k = FIN[y][m]; return k > 8 ? `<td class="c pf out">–</td>` : `<td class="c pf p${k}">${["", "冠軍", "亞軍", "季軍"][k] || k}</td>`; };
   document.getElementById("po-table").innerHTML = `<thead><tr><th>經理</th>${YEARS.map(y => `<th class="c">${sshort(y)}</th>`).join("")}<th class="r">戰績</th></tr></thead><tbody>${rows.map(r =>
     `<tr class="${r.m === cur ? "sel" : ""}"><td><b>${esc(DISP(r.m))}</b></td>${YEARS.map(y => fin(y, r.m)).join("")}<td class="r num">${r.w}-${r.l}${r.t ? "-" + r.t : ""}</td></tr>`).join("")}</tbody>`;
 }
